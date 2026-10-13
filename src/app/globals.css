@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-outfit);
+  --font-serif: var(--font-fraunces);
+  --color-ink: #1a1714;
+  --color-paper: #f6f1e6;
+  --color-desk: #100e0c;
+  --color-line: #e4d8c4;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #100e0c;
+  color: #f6f1e6;
+  font-family: var(--font-outfit), "Segoe UI", sans-serif;
+}
+
+::selection {
+  background: #f0b45a;
+  color: #1a1714;
+}
+
+.panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(26, 23, 20, 0.35) transparent;
+}

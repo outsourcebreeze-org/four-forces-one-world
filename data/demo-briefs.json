@@ -1,0 +1,460 @@
+{
+  "sit_7adc4835e5f3": {
+    "headline": "Elevated air quality index in Jakarta",
+    "summary": "Extreme Air quality reported by Open-Meteo Air Quality: Elevated air quality index in Jakarta. Time 2026-10-13 01:00 UTC. Source fields: place Jakarta; usAqi 230; pm25 132.2. The record is from Open-Meteo Air Quality. This demo brief only restates those fields.",
+    "affectedArea": "Jakarta",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Elevated air quality index in Jakarta",
+        "url": "https://open-meteo.com/en/docs/air-quality-api",
+        "source": "Open-Meteo Air Quality",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "Open-Meteo Air Quality",
+        "url": "https://open-meteo.com/en/docs/air-quality-api"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_329d9b82b2e0": {
+    "headline": "Elevated river discharge, Mekong near Phnom Penh",
+    "summary": "Extreme River discharge reported by Open-Meteo Flood: Elevated river discharge, Mekong near Phnom Penh. Time 2026-10-12 00:00 UTC. Source fields: place Mekong near Phnom Penh; peakDischargeM3s 578.4; baselineP90M3s 234.8. The record is from Open-Meteo Flood. This demo brief only restates those fields.",
+    "affectedArea": "Mekong near Phnom Penh",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Elevated river discharge, Mekong near Phnom Penh",
+        "url": "https://open-meteo.com/en/docs/flood-api",
+        "source": "Open-Meteo Flood",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "Open-Meteo Flood",
+        "url": "https://open-meteo.com/en/docs/flood-api"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_a22b1cab0ca2": {
+    "headline": "Tropical Cyclone POLO-26",
+    "summary": "Extreme Tropical cyclone reported by GDACS: Tropical Cyclone POLO-26. Time 2026-10-01 05:00 UTC. Source fields: alertLevel Red; alertScore 3; country Mexico. The record is from GDACS. This demo brief only restates those fields.",
+    "affectedArea": "Mexico",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Tropical Cyclone POLO-26",
+        "url": "https://www.gdacs.org/report.aspx?eventid=1001325&episodeid=38&eventtype=TC",
+        "source": "GDACS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "GDACS",
+        "url": "https://www.gdacs.org/report.aspx?eventid=1001325&episodeid=38&eventtype=TC"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_84c7dfd51ec6": {
+    "headline": "Flood in Nepal",
+    "summary": "Extreme Flood reported by GDACS: Flood in Nepal. Time 2026-09-30 09:40 UTC. Source fields: alertLevel Red; alertScore 3; country Nepal. The record is from GDACS. This demo brief only restates those fields.",
+    "affectedArea": "Nepal",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Flood in Nepal",
+        "url": "https://www.gdacs.org/report.aspx?eventid=1104124&episodeid=1&eventtype=FL",
+        "source": "GDACS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "GDACS",
+        "url": "https://www.gdacs.org/report.aspx?eventid=1104124&episodeid=1&eventtype=FL"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_922524e71e71": {
+    "headline": "Elevated air quality index in Delhi",
+    "summary": "Severe Air quality reported by Open-Meteo Air Quality: Elevated air quality index in Delhi. Time 2026-10-13 01:00 UTC. Source fields: place Delhi; usAqi 151; pm25 115. The record is from Open-Meteo Air Quality. This demo brief only restates those fields.",
+    "affectedArea": "Delhi",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Elevated air quality index in Delhi",
+        "url": "https://open-meteo.com/en/docs/air-quality-api",
+        "source": "Open-Meteo Air Quality",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "Open-Meteo Air Quality",
+        "url": "https://open-meteo.com/en/docs/air-quality-api"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_c96fbf67ea96": {
+    "headline": "Elevated air quality index in Lahore",
+    "summary": "Severe Air quality reported by Open-Meteo Air Quality: Elevated air quality index in Lahore. Time 2026-10-13 01:00 UTC. Source fields: place Lahore; usAqi 155; pm25 92.7. The record is from Open-Meteo Air Quality. This demo brief only restates those fields.",
+    "affectedArea": "Lahore",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Elevated air quality index in Lahore",
+        "url": "https://open-meteo.com/en/docs/air-quality-api",
+        "source": "Open-Meteo Air Quality",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "Open-Meteo Air Quality",
+        "url": "https://open-meteo.com/en/docs/air-quality-api"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_c6dfb8cb52a6": {
+    "headline": "Elevated air quality index in Dhaka",
+    "summary": "Severe Air quality reported by Open-Meteo Air Quality: Elevated air quality index in Dhaka. Time 2026-10-13 01:00 UTC. Source fields: place Dhaka; usAqi 153; pm25 59.5. The record is from Open-Meteo Air Quality. This demo brief only restates those fields.",
+    "affectedArea": "Dhaka",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Elevated air quality index in Dhaka",
+        "url": "https://open-meteo.com/en/docs/air-quality-api",
+        "source": "Open-Meteo Air Quality",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "Open-Meteo Air Quality",
+        "url": "https://open-meteo.com/en/docs/air-quality-api"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_d9c08fe78af4": {
+    "headline": "Elevated air quality index in Beijing",
+    "summary": "Severe Air quality reported by Open-Meteo Air Quality: Elevated air quality index in Beijing. Time 2026-10-13 01:00 UTC. Source fields: place Beijing; usAqi 192; pm25 29.2. The record is from Open-Meteo Air Quality. This demo brief only restates those fields.",
+    "affectedArea": "Beijing",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Elevated air quality index in Beijing",
+        "url": "https://open-meteo.com/en/docs/air-quality-api",
+        "source": "Open-Meteo Air Quality",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "Open-Meteo Air Quality",
+        "url": "https://open-meteo.com/en/docs/air-quality-api"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_a96d8f50ab64": {
+    "headline": "Tropical Cyclone ISAIAS-26",
+    "summary": "Severe Tropical cyclone reported by GDACS: Tropical Cyclone ISAIAS-26. Time 2026-10-13 00:59 UTC. Source fields: alertLevel Orange; alertScore 2; country United States. 2 public reports are grouped here, from GDACS, NASA EONET. This demo brief only restates those fields.",
+    "affectedArea": "United States",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "medium",
+      "score": 52
+    },
+    "evidence": [
+      {
+        "title": "Tropical Cyclone ISAIAS-26",
+        "url": "https://www.gdacs.org/report.aspx?eventid=1001334&episodeid=20&eventtype=TC",
+        "source": "GDACS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Hurricane Isaias",
+        "url": "https://www.nhc.noaa.gov/archive/2026/ISAIAS.shtml",
+        "source": "NASA EONET",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "GDACS",
+        "url": "https://www.gdacs.org/report.aspx?eventid=1001334&episodeid=20&eventtype=TC"
+      },
+      {
+        "title": "NASA EONET",
+        "url": "https://www.nhc.noaa.gov/archive/2026/ISAIAS.shtml"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_972a6ba11845": {
+    "headline": "Flood Warning issued October 12 at 8:58PM EDT until October 13 at 8:00AM EDT by NWS Greenville-Spartanburg SC",
+    "summary": "Severe Flood Warning reported by NOAA/NWS: Flood Warning issued October 12 at 8:58PM EDT until October 13 at 8:00AM EDT by NWS Greenville-Spartanburg SC. Time 2026-10-13 00:58 UTC. Source fields: severity Severe; urgency Expected; certainty Likely. 4 public reports are grouped here, from NOAA/NWS. This demo brief only restates those fields.",
+    "affectedArea": "Alexander, NC; Catawba, NC; Iredell, NC",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Flood Warning issued October 12 at 8:58PM EDT until October 13 at 8:00AM EDT by NWS Greenville-Spartanburg SC",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.446d48195b36049b806247bdcfee3a1bc3c1adbf.001.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Flood Warning issued October 12 at 11:06AM EDT until October 13 at 12:00AM EDT by NWS Greenville-Spartanburg SC",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.e61609d9f41b0c279ce083c3effc1ca70810bbf9.001.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Flood Warning issued October 12 at 10:00AM EDT until October 15 at 8:55PM EDT by NWS Columbia SC",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.32db65d206425f14a97e246b177c0c8ae59e0091.002.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Flood Warning issued October 12 at 10:00AM EDT until October 15 at 12:00PM EDT by NWS Columbia SC",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.32db65d206425f14a97e246b177c0c8ae59e0091.001.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.446d48195b36049b806247bdcfee3a1bc3c1adbf.001.1"
+      },
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.e61609d9f41b0c279ce083c3effc1ca70810bbf9.001.1"
+      },
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.32db65d206425f14a97e246b177c0c8ae59e0091.002.1"
+      },
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.32db65d206425f14a97e246b177c0c8ae59e0091.001.1"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_2c63242ea844": {
+    "headline": "Flood Warning issued October 12 at 8:56PM EDT until October 15 at 8:00PM EDT by NWS Tampa Bay Ruskin FL",
+    "summary": "Severe Flood Warning reported by NOAA/NWS: Flood Warning issued October 12 at 8:56PM EDT until October 15 at 8:00PM EDT by NWS Tampa Bay Ruskin FL. Time 2026-10-13 00:56 UTC. Source fields: severity Severe; urgency Immediate; certainty Observed. 4 public reports are grouped here, from NOAA/NWS. This demo brief only restates those fields.",
+    "affectedArea": "Citrus, FL; Levy, FL; Marion, FL",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "low",
+      "score": 36
+    },
+    "evidence": [
+      {
+        "title": "Flood Warning issued October 12 at 8:56PM EDT until October 15 at 8:00PM EDT by NWS Tampa Bay Ruskin FL",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.42335b3c790a4b03fb7d4d09db23577a5af49fb7.002.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Flood Warning issued October 12 at 8:56PM EDT until October 15 at 8:00PM EDT by NWS Tampa Bay Ruskin FL",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.42335b3c790a4b03fb7d4d09db23577a5af49fb7.001.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Flood Warning issued October 12 at 8:34PM EDT by NWS Jacksonville FL",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.2e6e76291e6b45c5be667c99f69fed9a2b54ad4b.001.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "Flood Warning issued October 12 at 10:19AM EDT by NWS Melbourne FL",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.20f1624737d138d123829411894af55024fce115.001.1",
+        "source": "NOAA/NWS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.42335b3c790a4b03fb7d4d09db23577a5af49fb7.002.1"
+      },
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.42335b3c790a4b03fb7d4d09db23577a5af49fb7.001.1"
+      },
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.2e6e76291e6b45c5be667c99f69fed9a2b54ad4b.001.1"
+      },
+      {
+        "title": "NOAA/NWS",
+        "url": "https://api.weather.gov/alerts/urn%3Aoid%3A2.49.0.1.840.0.20f1624737d138d123829411894af55024fce115.001.1"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  },
+  "sit_b96c74ca0e71": {
+    "headline": "M 6.1 - 18 km W of Río Grande, Panama",
+    "summary": "Severe Earthquake reported by USGS: M 6.1 - 18 km W of Río Grande, Panama. Time 2026-10-12 23:36 UTC. Source fields: magnitude 4.8; depthKm 10; place 21 km W of Río Grande, Panama. 17 public reports are grouped here, from USGS, GDACS. This demo brief only restates those fields.",
+    "affectedArea": "18 km W of Río Grande, Panama",
+    "populationEstimate": null,
+    "confidence": {
+      "level": "medium",
+      "score": 52
+    },
+    "evidence": [
+      {
+        "title": "M 4.8 - 21 km W of Río Grande, Panama",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1ww",
+        "source": "USGS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "M 6.1 - 18 km W of Río Grande, Panama",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1wn",
+        "source": "USGS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "M 4.5 - 5 km WSW of Calidonia, Panama",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1w7",
+        "source": "USGS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      },
+      {
+        "title": "M 4.5 - 21 km WNW of Río Grande, Panama",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1w6",
+        "source": "USGS",
+        "stance": "unconfirmed",
+        "note": "Official or primary source record for this situation."
+      }
+    ],
+    "contradictions": [],
+    "whatChanged": "No earlier brief is stored, so there is no change to compare.",
+    "guidanceLinks": [
+      {
+        "title": "USGS",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1ww"
+      },
+      {
+        "title": "USGS",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1wn"
+      },
+      {
+        "title": "USGS",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1w7"
+      },
+      {
+        "title": "USGS",
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u1w6"
+      }
+    ],
+    "demo": true,
+    "demoLabel": "Demo brief. This wording is a template, not a Nemotron response. Add NEBIUS_API_KEY for a model-written brief."
+  }
+}
