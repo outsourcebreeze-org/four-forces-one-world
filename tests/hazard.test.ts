@@ -9,6 +9,7 @@ import {
 } from "../src/lib/agent/nemotron";
 import { briefDraftSchema, normalizeBriefDraft } from "../src/lib/agent/schema";
 import { numberTokens, parseJsonLoose, unsupportedNumbers, wordCount } from "../src/lib/agent/text";
+import { readServerEnv, tavilyKeyStatus } from "../src/lib/env";
 import { clusterEvents } from "../src/lib/cluster";
 import { DEFAULT_MODELS } from "../src/lib/constants";
 import { assessFlood } from "../src/lib/flood";
@@ -305,9 +306,18 @@ describe("Nemotron routing", () => {
     const parsed = parseJsonLoose('<think>secret</think>\n```json\n{"headline":"Quake"}\n```');
     expect(parsed).toEqual({ headline: "Quake" });
     expect(numberTokens("magnitude 4.8 at 10 km")).toEqual(["4.8", "10"]);
+    expect(numberTokens("15,470 acres")).toEqual(["15,470"]);
     expect(unsupportedNumbers("about 4.8", "magnitude 4.8")).toEqual([]);
     expect(unsupportedNumbers("about 99", "magnitude 4.8")).toEqual(["99"]);
     expect(unsupportedNumbers("PM2.5 is 97.6", "pm25 97.6")).toEqual([]);
+    expect(unsupportedNumbers("burned 15,470 acres", '{"magnitudeValue":15470,"magnitudeUnit":"acres"}')).toEqual([]);
+    expect(unsupportedNumbers("about 15 acres", '{"magnitudeValue":15470}')).toEqual(["15"]);
+    expect(unsupportedNumbers("near 45.54 N", '{"lat":45.5398}')).toEqual([]);
+    expect(tavilyKeyStatus({ TAVILY_API_KEY: "  'abcd'  " } as NodeJS.ProcessEnv)).toEqual({
+      tavilyConfigured: true,
+      keyLength: 4,
+    });
+    expect(readServerEnv("TAVILY_API_KEY", {} as NodeJS.ProcessEnv)).toBe("");
     const loose = normalizeBriefDraft({
       headline: "Mekong discharge is elevated",
       summary: "Open-Meteo Flood reports elevated discharge near Phnom Penh.",

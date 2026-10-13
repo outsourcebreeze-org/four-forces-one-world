@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { clusterEvents } from "./cluster";
+import { readServerEnv } from "./env";
 import { ingestLive } from "./ingest";
 import { modelSettings } from "./agent/nemotron";
 import type { HazardEvent, KeyPresence, NewsArticle, SourceHealth, WorldState } from "./types";
@@ -23,15 +24,15 @@ let inflight: Promise<WorldState> | null = null;
 
 export function keyPresence(): KeyPresence {
   return {
-    nebius: Boolean(process.env.NEBIUS_API_KEY?.trim()),
-    tavily: Boolean(process.env.TAVILY_API_KEY?.trim()),
-    firms: Boolean(process.env.FIRMS_MAP_KEY?.trim()),
-    openaq: Boolean(process.env.OPENAQ_API_KEY?.trim()),
+    nebius: Boolean(readServerEnv("NEBIUS_API_KEY")),
+    tavily: Boolean(readServerEnv("TAVILY_API_KEY")),
+    firms: Boolean(readServerEnv("FIRMS_MAP_KEY")),
+    openaq: Boolean(readServerEnv("OPENAQ_API_KEY")),
   };
 }
 
 export function snapshotRequested(): boolean {
-  const value = process.env.DEMO_MODE?.trim().toLowerCase();
+  const value = readServerEnv("DEMO_MODE").toLowerCase();
   return value === "snapshot" || value === "1" || value === "true";
 }
 
@@ -170,7 +171,7 @@ export function agentStatus() {
       brief: settings.brief,
       analyst: settings.analyst,
     },
-    tavily: Boolean(process.env.TAVILY_API_KEY?.trim()),
+    tavily: Boolean(readServerEnv("TAVILY_API_KEY")),
     demoBriefs: !settings.apiKey,
   };
 }

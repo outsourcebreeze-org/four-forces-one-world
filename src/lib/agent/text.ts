@@ -1,4 +1,5 @@
-const NUMBER = /\d+(?:\.\d+)?/g;
+/** Plain numbers, decimals, and thousands groups such as 15,470. */
+const NUMBER = /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g;
 
 export function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -16,10 +17,45 @@ export function numberTokens(text: string): string[] {
 
 const POLLUTANT_LABEL = /\b(?:pm\s*2\.5|pm2\.5|pm\s*10|pm10|no\s*2|no2|so\s*2|so2|o3|co2)\b/gi;
 
+function canonicalNumber(token: string): number | null {
+  const value = Number(token.replace(/,/g, ""));
+  return Number.isFinite(value) ? value : null;
+}
+
+function roundedForms(value: number): number[] {
+  return [
+    value,
+    Math.round(value),
+    Math.round(value * 10) / 10,
+    Math.round(value * 100) / 100,
+    Math.round(value * 1000) / 1000,
+  ];
+}
+
+/** A cited figure matches a source figure when it is the same value, a comma grouping, or a rounding. */
+export function numberIsSupported(cited: number, sources: readonly number[]): boolean {
+  for (const source of sources) {
+    if (roundedForms(source).some((form) => form === cited)) return true;
+    if (roundedForms(cited).some((form) => form === source)) return true;
+    const delta = Math.abs(source - cited);
+    if (delta <= 0.51) return true;
+    const scale = Math.max(Math.abs(source), 1);
+    if (delta / scale <= 0.01) return true;
+  }
+  return false;
+}
+
 export function unsupportedNumbers(text: string, allowedBlob: string): string[] {
   const stripped = text.replace(POLLUTANT_LABEL, " ");
-  const allowed = new Set(numberTokens(allowedBlob));
-  return numberTokens(stripped).filter((token) => !allowed.has(token));
+  const sources = numberTokens(allowedBlob)
+    .map(canonicalNumber)
+    .filter((value): value is number => value != null);
+  const bad: string[] = [];
+  for (const token of numberTokens(stripped)) {
+    const cited = canonicalNumber(token);
+    if (cited == null || !numberIsSupported(cited, sources)) bad.push(token);
+  }
+  return bad;
 }
 
 export function parseJsonLoose(text: string): unknown {

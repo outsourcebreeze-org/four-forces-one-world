@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { DEFAULT_MODELS, NEBIUS_BASE_URL } from "../constants";
+import { readServerEnv } from "../env";
 
 export type ModelRole = "triage" | "brief" | "analyst";
 
@@ -13,11 +14,11 @@ export type ModelSettings = {
 
 export function modelSettings(env: NodeJS.ProcessEnv = process.env): ModelSettings {
   return {
-    baseURL: env.NEBIUS_BASE_URL?.trim() || NEBIUS_BASE_URL,
-    apiKey: env.NEBIUS_API_KEY?.trim() ?? "",
-    triage: env.NEMOTRON_TRIAGE_MODEL?.trim() || DEFAULT_MODELS.triage,
-    brief: env.NEMOTRON_BRIEF_MODEL?.trim() || DEFAULT_MODELS.brief,
-    analyst: env.NEMOTRON_ANALYST_MODEL?.trim() || DEFAULT_MODELS.analyst,
+    baseURL: readServerEnv("NEBIUS_BASE_URL", env) || NEBIUS_BASE_URL,
+    apiKey: readServerEnv("NEBIUS_API_KEY", env),
+    triage: readServerEnv("NEMOTRON_TRIAGE_MODEL", env) || DEFAULT_MODELS.triage,
+    brief: readServerEnv("NEMOTRON_BRIEF_MODEL", env) || DEFAULT_MODELS.brief,
+    analyst: readServerEnv("NEMOTRON_ANALYST_MODEL", env) || DEFAULT_MODELS.analyst,
   };
 }
 

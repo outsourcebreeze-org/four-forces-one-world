@@ -8,6 +8,7 @@ import {
   fetchOpenMeteo,
   fetchUsgs,
 } from "./feeds";
+import { readServerEnv } from "./env";
 import { redactSecrets } from "./http";
 import type { HazardEvent, NewsArticle, SourceHealth } from "./types";
 
@@ -50,8 +51,8 @@ export async function ingestLive(): Promise<{
   articles: NewsArticle[];
   health: SourceHealth[];
 }> {
-  const firmsKey = process.env.FIRMS_MAP_KEY?.trim();
-  const openAqKey = process.env.OPENAQ_API_KEY?.trim();
+  const firmsKey = readServerEnv("FIRMS_MAP_KEY");
+  const openAqKey = readServerEnv("OPENAQ_API_KEY");
   const jobs: Job[] = [
     {
       source: "USGS",
