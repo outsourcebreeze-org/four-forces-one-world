@@ -23,7 +23,8 @@ The live demo already has the Nebius and Tavily keys configured. You do not need
 3. Choose **Ask Nemotron for a brief**. A live brief is badged **Live brief**, not **Demo**. The footer names the models. Nano triages, then Super drafts. A **Tavily** mark means the news check ran. Confidence stays capped when that check did not run.
 4. When the panel says other forces sit within 500 km, choose **Regional note (Ultra)**. That is the only Ultra call. The footer should include `nvidia/Nemotron-3-Ultra-550b-a55b` (or the `NEMOTRON_ANALYST_MODEL` override). A **Demo** badge means the model reply failed grounding and the template was used instead.
 5. Open [https://four-forces-one-world.vercel.app/api/health](https://four-forces-one-world.vercel.app/api/health). `tavilyConfigured` is `true` when the Tavily key is present. The response does not include the key or its length.
-6. Optional local checks, from a checkout with dependencies installed: `npm test`, then `npm run build`. `npm run hello-nemotron` calls Nemotron Nano when `NEBIUS_API_KEY` is set and prints a skip message when it is not.
+6. Select a situation in the United States, such as a western wildfire or a flood warning. The side panel **Live cameras** section lists USGS river cameras within 50 km, with a still that refreshes about once a minute, a distance, and a link to HIVIS. A situation with nothing nearby, including most places outside the United States and Québec, says no camera was found. Québec matches open the official Québec 511 viewer instead of embedding the video.
+7. Optional local checks, from a checkout with dependencies installed: `npm test`, then `npm run build`. `npm run hello-nemotron` calls Nemotron Nano when `NEBIUS_API_KEY` is set and prints a skip message when it is not.
 
 ## Run
 
@@ -73,7 +74,19 @@ The globe colors situations by force. Filters cover force, severity, time window
 - With Tavily, a news search runs for that situation. Corroboration can raise confidence. Language such as “false alarm” or “did not happen” lowers it. Confidence stays capped when Tavily did not run.
 - GDELT is one query per ingest, at least 5 seconds apart. A 429 waits 12 seconds and then 28 seconds before the next try, and then the feed is marked down. Matching articles are attached as unconfirmed context.
 
-`POST /api/briefs` with `{ "situationId", "kind": "situation" | "regional" }`. `GET /api/events`, `/api/situations`, `/api/health`, and `/api/agent` are the other routes. `/api/health` reports `tavilyConfigured` and does not report key length. `/api/agent` reports model ids and whether a key is present. It never returns the key.
+`POST /api/briefs` with `{ "situationId", "kind": "situation" | "regional" }`. `GET /api/events`, `/api/situations`, `/api/health`, `/api/agent`, and `/api/cameras` are the other routes. `/api/cameras?lat=&lon=` returns up to three public cameras within 50 km. `/api/health` reports `tavilyConfigured` and does not report key length. `/api/agent` reports model ids and whether a key is present. It never returns the key.
+
+## Live cameras
+
+Selecting a situation asks for cameras within 50 km. The catalogs are cached on the server for 15 minutes. No camera key is required.
+
+| Source | Connected | Terms | What the panel does |
+| --- | --- | --- | --- |
+| [USGS HIVIS / NIMS](https://api.waterdata.usgs.gov/docs/nims/) | Yes | US government work, public domain. An API key is optional and only raises the rate limit ([key docs](https://api.waterdata.usgs.gov/docs/ogcapi/keys/)). Unkeyed reads stay under the published limit by caching the catalog. | Shows the official 720 px still (`{smallDir}{camId}_newest.jpg`) and links to the [HIVIS camera page](https://apps.usgs.gov/hivis). |
+| [Québec 511 cameras](https://www.donneesquebec.ca/recherche/dataset/camera-de-circulation) | Yes, link only | The Données Québec GeoJSON is [CC BY 4.0](https://www.donneesquebec.ca/recherche/dataset/camera-de-circulation). The [Québec 511 platform terms](https://www.quebec511.info/en/basdepage/Utilisation.aspx) prohibit using that site’s content for a purpose other than the platform. The RSS policy is separate and is not the camera catalog. | Shows the nearest camera name, distance, and the official viewer URL from the open dataset. It does not embed or hotlink the video. |
+| [ALERTWildfire / ALERTWest](https://alertwest.live/cameras) | No | The [terms of use](https://alertwest.live/cameras) (also at [alertwest.live/tou](https://alertwest.live/tou)) forbid screen-scraping, pulling data into a third-party system, and any license to reproduce camera data without an MSA (sections 3.6, 3.7, and 7.1). The [crediting page](https://www.alertwest.org/crediting-and-branding) and [ALERTCalifornia’s non-commercial credit guide](https://alertcalifornia.org/crediting-and-branding/) do not grant that MSA. | Not shown. |
+| [HPWREN](https://www.hpwren.ucsd.edu/cc.html) | No | Live images less than 24 hours old require a license from the UC San Diego Office of Innovation and Commercialization. This demo does not have that license. Archived imagery is CC BY-NC and is not a live camera. | Not shown. |
+| [FL511 / Florida 511](https://services.arcgis.com/3wFbqsFPLeKqOlIK/arcgis/rest/services/FL511_Traffic_Cameras/FeatureServer) | No | No public terms were found that allow a third-party app to reproduce FL511 camera images. FDOT’s RTMC procedures limit CCTV to traffic and information use on FDOT systems, and the fuller SunGuide feed needs an FDOT agreement this project does not have. Newsroom materials at [news.fl511.com/about](https://news.fl511.com/about/) cover promoting FL511, not republishing camera frames. | Not shown. |
 
 ## Architecture
 
@@ -94,6 +107,7 @@ Space-time clusters (situations)
              Nano triage → Super brief → Tavily + GDELT
              Ultra only for a regional note
              Demo template if the key is missing or the draft fails grounding
+             Live cameras: USGS stills and Québec 511 links within 50 km
 ```
 
 Ingest runs when an API route is called and is cached in memory for eight minutes. A copy is also written under `.cache/` locally, or `/tmp` on Vercel. A failed cache write does not discard a live result. If every live feed comes back empty, the UI switches to the recorded snapshot and says so. See [DEPLOY.md](DEPLOY.md) for Vercel.

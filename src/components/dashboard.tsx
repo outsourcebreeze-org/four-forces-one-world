@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GlobeView } from "@/components/globe-view";
+import { LiveCameras } from "@/components/live-cameras";
 import { FORCE_META, OPEN_METEO_NOTICE, WATCH_AREAS } from "@/lib/constants";
 import { haversineKm } from "@/lib/geo";
 import { SEVERITY_LABEL } from "@/lib/severity";
@@ -304,6 +305,7 @@ export function Dashboard() {
                     </li>
                   ))}
                 </ul>
+                <LiveCameras lat={selected.lat} lon={selected.lon} />
                 <div className="mt-4 flex flex-wrap gap-2">
                   {world?.keys.nebius ? (
                     <Button size="sm" onClick={() => void requestBrief(selected, "situation")}>

@@ -17,6 +17,10 @@ This file is the attribution register. Re-check terms before any commercial use.
 | [OpenAQ v3](https://docs.openaq.org/) | Air | `OPENAQ_API_KEY` in the `X-API-Key` header. | Attribute OpenAQ and the underlying monitoring network. Skipped when the key is absent. |
 | [Tavily Search](https://docs.tavily.com/) | Verification | `TAVILY_API_KEY`. Called when a brief is requested, not during ingest. | Tavily API terms. A functional search call is what adjusts confidence. |
 | [Nebius Token Factory](https://docs.tokenfactory.nebius.com/) | Briefs | `NEBIUS_API_KEY`. OpenAI-compatible `https://api.tokenfactory.nebius.com/v1/`. | Nebius and NVIDIA model terms. NVIDIA open models: Nemotron 3 Nano, Super, and Ultra. |
+| [USGS HIVIS / NIMS](https://api.waterdata.usgs.gov/docs/nims/) | Cameras | No key. `/cameras` catalog, cached 15 minutes. Stills use `{smallDir}{camId}_newest.jpg`. | US government work, public domain. Attribute the U.S. Geological Survey. An API key only raises the rate limit. |
+| [Québec 511 cameras](https://www.donneesquebec.ca/recherche/dataset/camera-de-circulation) | Cameras | No key. Données Québec WFS GeoJSON. | Locations and official viewer links are CC BY 4.0. The panel links to Québec 511 and does not embed the video. Platform terms: [Québec 511](https://www.quebec511.info/en/basdepage/Utilisation.aspx). |
+
+Not connected, because the terms do not allow this demo: ALERTWildfire / ALERTWest (no license to reproduce camera data without an MSA, [terms](https://alertwest.live/cameras)), HPWREN live imagery (a UC San Diego license is required for data less than 24 hours old, [conditions](https://www.hpwren.ucsd.edu/cc.html)), and FL511 camera images (no public reuse grant, and the fuller feed needs an FDOT agreement).
 
 Not in this version: ReliefWeb (needs an approved `appname`), Copernicus CEMS GRIB/NetCDF (Open-Meteo already exposes GloFAS), flights, ships, and cable maps.
 
