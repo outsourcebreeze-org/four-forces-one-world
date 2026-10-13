@@ -313,7 +313,12 @@ describe("Nemotron routing", () => {
     expect(unsupportedNumbers("burned 15,470 acres", '{"magnitudeValue":15470,"magnitudeUnit":"acres"}')).toEqual([]);
     expect(unsupportedNumbers("about 15 acres", '{"magnitudeValue":15470}')).toEqual(["15"]);
     expect(unsupportedNumbers("near 45.54 N", '{"lat":45.5398}')).toEqual([]);
-    expect(tavilyKeyStatus({ TAVILY_API_KEY: "  'abcd'  " } as NodeJS.ProcessEnv)).toEqual({
+    expect(
+      tavilyKeyStatus({
+        NODE_ENV: "test",
+        TAVILY_API_KEY: "  'abcd'  ",
+      }),
+    ).toEqual({
       tavilyConfigured: true,
       keyLength: 4,
     });
