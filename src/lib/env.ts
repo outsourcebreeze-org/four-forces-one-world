@@ -19,8 +19,6 @@ export function readServerEnv(name: string, env: NodeJS.ProcessEnv = process.env
 
 export function tavilyKeyStatus(env: NodeJS.ProcessEnv = process.env): {
   tavilyConfigured: boolean;
-  keyLength: number;
 } {
-  const keyLength = readServerEnv("TAVILY_API_KEY", env).length;
-  return { tavilyConfigured: keyLength > 0, keyLength };
+  return { tavilyConfigured: readServerEnv("TAVILY_API_KEY", env).length > 0 };
 }

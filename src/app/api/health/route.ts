@@ -13,7 +13,6 @@ export async function GET() {
     dataMode: world.dataMode,
     notice: world.notice,
     tavilyConfigured: tavily.tavilyConfigured,
-    keyLength: tavily.keyLength,
     health: world.health,
     counts: {
       events: world.events.length,

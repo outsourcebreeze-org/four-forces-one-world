@@ -314,14 +314,18 @@ describe("Nemotron routing", () => {
     expect(unsupportedNumbers("about 15 acres", '{"magnitudeValue":15470}')).toEqual(["15"]);
     expect(unsupportedNumbers("near 45.54 N", '{"lat":45.5398}')).toEqual([]);
     expect(
+      readServerEnv("TAVILY_API_KEY", {
+        NODE_ENV: "test",
+        TAVILY_API_KEY: "  'abcd'  ",
+      }),
+    ).toBe("abcd");
+    expect(
       tavilyKeyStatus({
         NODE_ENV: "test",
         TAVILY_API_KEY: "  'abcd'  ",
       }),
-    ).toEqual({
-      tavilyConfigured: true,
-      keyLength: 4,
-    });
+    ).toEqual({ tavilyConfigured: true });
+    expect(tavilyKeyStatus({ NODE_ENV: "test" })).toEqual({ tavilyConfigured: false });
     expect(readServerEnv("TAVILY_API_KEY", {} as NodeJS.ProcessEnv)).toBe("");
     const loose = normalizeBriefDraft({
       headline: "Mekong discharge is elevated",

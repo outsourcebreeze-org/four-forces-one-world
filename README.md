@@ -6,6 +6,25 @@ It is a civil public-safety tool for municipal emergency offices, humanitarian c
 
 The four-force idea was inspired by FourForces Watch. This repository is a separate project. The code here was written for this project and is not a copy of that one.
 
+**Live demo:** [https://four-forces-one-world.vercel.app](https://four-forces-one-world.vercel.app)
+
+**Demo video:** YouTube link TBD
+
+## Hackathon
+
+Nebius Global AI Hackathon. Track: Best Apps and Agents. Entrant: OutsourceBreeze LLC (Miami, FL).
+
+## Testing instructions for judges
+
+The live demo already has the Nebius and Tavily keys configured. You do not need to paste secrets into the site.
+
+1. Open the [live demo](https://four-forces-one-world.vercel.app) and wait for the globe. The first load pulls public feeds and can take a few seconds.
+2. Filter by force (water, air, land, fire), severity, time window, text, or a watch-area city. The side list is the keyboard path. Selecting a row or a globe point shows the underlying public records.
+3. Choose **Ask Nemotron for a brief**. A live brief is badged **Live brief**, not **Demo**. The footer names the models. Nano triages, then Super drafts. A **Tavily** mark means the news check ran. Confidence stays capped when that check did not run.
+4. When the panel says other forces sit within 500 km, choose **Regional note (Ultra)**. That is the only Ultra call. The footer should include `nvidia/Nemotron-3-Ultra-550b-a55b` (or the `NEMOTRON_ANALYST_MODEL` override). A **Demo** badge means the model reply failed grounding and the template was used instead.
+5. Open [https://four-forces-one-world.vercel.app/api/health](https://four-forces-one-world.vercel.app/api/health). `tavilyConfigured` is `true` when the Tavily key is present. The response does not include the key or its length.
+6. Optional local checks, from a checkout with dependencies installed: `npm test`, then `npm run build`. `npm run hello-nemotron` calls Nemotron Nano when `NEBIUS_API_KEY` is set and prints a skip message when it is not.
+
 ## Run
 
 ```bash
@@ -14,7 +33,7 @@ npm install && npm run dev
 
 Open [http://127.0.0.1:3847](http://127.0.0.1:3847).
 
-No API keys are required. USGS, GDACS, NASA EONET, NWS, and Open-Meteo load live. Briefs are templates labeled **Demo** until `NEBIUS_API_KEY` is set. Set `DEMO_MODE=snapshot` to use the recorded file in `data/demo-snapshot.json` instead of live feeds.
+No API keys are required to browse public feeds. USGS, GDACS, NASA EONET, NWS, and Open-Meteo load live. Briefs are templates labeled **Demo** until `NEBIUS_API_KEY` is set. Set `DEMO_MODE=snapshot` to use the recorded file in `data/demo-snapshot.json` instead of live feeds.
 
 ```bash
 npm test
@@ -39,20 +58,22 @@ Copy `.env.example` to `.env`. Secrets stay in the environment. Nothing in this 
 | `NEBIUS_BASE_URL` | Optional | Default `https://api.tokenfactory.nebius.com/v1/` |
 | `DEMO_MODE` | Optional | `snapshot` forces the recorded feeds |
 
-Checked against Token Factory on 13 Oct 2026: one base URL serves these models. Nano is used for triage because it returns `content` directly. Super writes briefs. Super is a reasoning model, so brief calls send `max_tokens` of 4000. If `content` still comes back empty, the same prompt is sent to the triage model (Nano, unless you override it). Ultra is used only when you ask for a regional note.
+Checked against Token Factory on 13 Oct 2026: one base URL serves these models. Nano is used for triage because it returns `content` directly. Super writes situation briefs. Super is a reasoning model, so brief calls send `max_tokens` of 4000. If `content` still comes back empty, the same prompt is sent to the triage model (Nano, unless you override it).
 
-Still needed for the full agent path: `NEBIUS_API_KEY` and `TAVILY_API_KEY`. FIRMS and OpenAQ are optional.
+Ultra is `nvidia/Nemotron-3-Ultra-550b-a55b` unless `NEMOTRON_ANALYST_MODEL` overrides it. It is called in one place: a regional note. The situation panel button **Regional note (Ultra)** (`src/components/dashboard.tsx`) posts `{ situationId, kind: "regional" }` to `POST /api/briefs`. `createBrief` in `src/lib/agent/pipeline.ts` then calls `draftWithModel` with role `analyst` only for that kind. `completeJson` in `src/lib/agent/nemotron.ts` sends the analyst role to the Ultra model. A single-situation brief uses Super, and triage uses Nano. Ultra is not used for ingest.
+
+The production deployment has `NEBIUS_API_KEY` and `TAVILY_API_KEY` configured. FIRMS and OpenAQ stay optional. A local checkout still needs the Nebius and Tavily keys in `.env` if you want live briefs and news verification on your own machine.
 
 ## What you can do
 
 The globe colors situations by force. Filters cover force, severity, time window, a text search, and a watch-area city. The side list is the keyboard path. Selecting a situation shows the underlying records.
 
 - Without Nebius, a template brief is filled from the source fields and marked demo. Cached examples in `data/demo-briefs.json` are used when the situation id matches the recording.
-- With Nebius, Nano triages, Super drafts, and the draft is rejected if it cites a number or a population that is not in the payload. Ultra drafts a regional note when other forces sit within 500 km.
+- With Nebius, Nano triages, Super drafts, and the draft is rejected if it cites a number or a population that is not in the payload. Ultra drafts a regional note when other forces sit within 500 km. That regional call is the analyst role described above.
 - With Tavily, a news search runs for that situation. Corroboration can raise confidence. Language such as “false alarm” or “did not happen” lowers it. Confidence stays capped when Tavily did not run.
 - GDELT is one query per ingest, at least 5 seconds apart. A 429 waits 12 seconds and then 28 seconds before the next try, and then the feed is marked down. Matching articles are attached as unconfirmed context.
 
-`POST /api/briefs` with `{ "situationId", "kind": "situation" | "regional" }`. `GET /api/events`, `/api/situations`, `/api/health`, and `/api/agent` are the other routes. `/api/agent` reports model ids and whether a key is present. It never returns the key.
+`POST /api/briefs` with `{ "situationId", "kind": "situation" | "regional" }`. `GET /api/events`, `/api/situations`, `/api/health`, and `/api/agent` are the other routes. `/api/health` reports `tavilyConfigured` and does not report key length. `/api/agent` reports model ids and whether a key is present. It never returns the key.
 
 ## Architecture
 
