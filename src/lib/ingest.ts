@@ -8,6 +8,7 @@ import {
   fetchOpenMeteo,
   fetchUsgs,
 } from "./feeds";
+import { redactSecrets } from "./http";
 import type { HazardEvent, NewsArticle, SourceHealth } from "./types";
 
 type Job = {
@@ -37,7 +38,7 @@ async function runJob(job: Job): Promise<SourceHealth & { events: HazardEvent[];
       ok: false,
       count: 0,
       ms: Date.now() - started,
-      error: message.slice(0, 240),
+      error: redactSecrets(message).slice(0, 240),
       events: [],
       articles: [],
     };

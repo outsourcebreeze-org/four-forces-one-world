@@ -7,13 +7,20 @@ import {
   readMessageContent,
   shouldFallbackToNano,
 } from "../src/lib/agent/nemotron";
-import { briefDraftSchema } from "../src/lib/agent/schema";
+import { briefDraftSchema, normalizeBriefDraft } from "../src/lib/agent/schema";
 import { numberTokens, parseJsonLoose, unsupportedNumbers, wordCount } from "../src/lib/agent/text";
 import { clusterEvents } from "../src/lib/cluster";
 import { DEFAULT_MODELS } from "../src/lib/constants";
 import { assessFlood } from "../src/lib/flood";
 import { quantile } from "../src/lib/geo";
-import { parseEonet, parseFirms, parseGdacs, parseUsgs } from "../src/lib/feeds";
+import {
+  gdeltRetryDelayMs,
+  parseEonet,
+  parseFirms,
+  parseGdacs,
+  parseOpenAqLatest,
+  parseUsgs,
+} from "../src/lib/feeds";
 import {
   forceForNwsEvent,
   severityForAqi,
@@ -135,11 +142,32 @@ describe("feeds", () => {
       "latitude,longitude,acq_date,acq_time,confidence,frp",
       "34.1,-118.2,2026-10-12,0315,h,12",
       "34.2,-118.3,2026-10-12,0315,l,4",
+      "41.2,-105.4,2026-10-12,0400,nominal,8",
       "10.0,20.0,2026-10-12,1200,85,140",
     ].join("\n");
     const events = parseFirms(csv);
-    expect(events).toHaveLength(2);
+    expect(events).toHaveLength(3);
     expect(events.some((item) => item.severity === 3)).toBe(true);
+  });
+
+  it("reads an OpenAQ latest row by sensor id", () => {
+    const event = parseOpenAqLatest(
+      { id: "9", name: "Iloilo", lat: 10.7, lon: 122.5, sensorId: 42 },
+      { results: [{ sensorsId: 42, value: 40.6, datetime: { utc: "2026-10-13T00:00:00Z" } }] },
+    );
+    expect(event).toMatchObject({ source: "OpenAQ", force: "air", details: { pm25: 40.6 } });
+    expect(
+      parseOpenAqLatest(
+        { id: "9", name: "Iloilo", lat: 10.7, lon: 122.5, sensorId: 42 },
+        { results: [{ sensorsId: 42, value: 4, datetime: { utc: "2026-10-13T00:00:00Z" } }] },
+      ),
+    ).toBeNull();
+  });
+
+  it("backs off longer after each GDELT 429 and then stops", () => {
+    expect(gdeltRetryDelayMs(0)).toBe(12_000);
+    expect(gdeltRetryDelayMs(1)).toBe(28_000);
+    expect(gdeltRetryDelayMs(2)).toBeNull();
   });
 });
 
@@ -279,5 +307,18 @@ describe("Nemotron routing", () => {
     expect(numberTokens("magnitude 4.8 at 10 km")).toEqual(["4.8", "10"]);
     expect(unsupportedNumbers("about 4.8", "magnitude 4.8")).toEqual([]);
     expect(unsupportedNumbers("about 99", "magnitude 4.8")).toEqual(["99"]);
+    expect(unsupportedNumbers("PM2.5 is 97.6", "pm25 97.6")).toEqual([]);
+    const loose = normalizeBriefDraft({
+      headline: "Mekong discharge is elevated",
+      summary: "Open-Meteo Flood reports elevated discharge near Phnom Penh.",
+      confidence: { level: "moderate", score: 0.7 },
+      evidence: ["Open-Meteo Flood"],
+      guidanceLinks: ["https://example.com/flood"],
+    });
+    expect(briefDraftSchema.safeParse(loose).success).toBe(true);
+    expect((loose as { confidence: { score: number; level: string } }).confidence).toEqual({
+      score: 70,
+      level: "medium",
+    });
   });
 });

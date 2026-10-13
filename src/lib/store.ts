@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { clusterEvents } from "./cluster";
 import { ingestLive } from "./ingest";
@@ -6,8 +7,14 @@ import { modelSettings } from "./agent/nemotron";
 import type { HazardEvent, KeyPresence, NewsArticle, SourceHealth, WorldState } from "./types";
 
 const TTL_MS = 8 * 60 * 1000;
-const cachePath = path.join(process.cwd(), ".cache", "world.json");
 const snapshotPath = path.join(process.cwd(), "data", "demo-snapshot.json");
+
+function cacheCandidates(): string[] {
+  const local = path.join(process.cwd(), ".cache", "world.json");
+  const temp = path.join(os.tmpdir(), "four-forces-world.json");
+  // Vercel functions can write /tmp. The project directory is read-only.
+  return process.env.VERCEL ? [temp, local] : [local, temp];
+}
 
 type DiskCache = { at: number; payload: WorldState };
 
@@ -78,19 +85,32 @@ async function readSnapshot(): Promise<WorldState> {
 }
 
 async function readDisk(): Promise<DiskCache | null> {
-  try {
-    const raw = await readFile(cachePath, "utf8");
-    const parsed = JSON.parse(raw) as DiskCache;
-    if (!parsed?.payload || typeof parsed.at !== "number") return null;
-    return parsed;
-  } catch {
-    return null;
+  for (const cachePath of cacheCandidates()) {
+    try {
+      const raw = await readFile(cachePath, "utf8");
+      const parsed = JSON.parse(raw) as DiskCache;
+      if (!parsed?.payload || typeof parsed.at !== "number") continue;
+      return parsed;
+    } catch {
+      // Try the next location.
+    }
   }
+  return null;
 }
 
 async function writeDisk(entry: DiskCache): Promise<void> {
-  await mkdir(path.dirname(cachePath), { recursive: true });
-  await writeFile(cachePath, JSON.stringify(entry));
+  const body = JSON.stringify(entry);
+  let lastError: unknown;
+  for (const cachePath of cacheCandidates()) {
+    try {
+      await mkdir(path.dirname(cachePath), { recursive: true });
+      await writeFile(cachePath, body);
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Could not write the world cache");
 }
 
 export async function getWorld(options: { refresh?: boolean } = {}): Promise<WorldState> {
@@ -123,7 +143,11 @@ export async function getWorld(options: { refresh?: boolean } = {}): Promise<Wor
         notice: failed.length ? `Some feeds did not respond: ${failed.join(", ")}.` : null,
       });
       memory = { at: Date.now(), payload: world };
-      await writeDisk(memory);
+      try {
+        await writeDisk(memory);
+      } catch {
+        // A read-only filesystem must not throw away a successful live ingest.
+      }
       return world;
     } catch {
       const snapshot = await readSnapshot();

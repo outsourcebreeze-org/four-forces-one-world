@@ -27,7 +27,8 @@ export function modelFor(role: ModelRole, settings: ModelSettings = modelSetting
 
 /** Super and Ultra spend tokens on reasoning. Below 1000, content often comes back empty. */
 export function maxTokensForModel(model: string, nanoModel: string): number {
-  return model === nanoModel ? 800 : 1600;
+  // Reasoning models spend most of the budget before the JSON, so leave room past 1000.
+  return model === nanoModel ? 800 : 4000;
 }
 
 export function readMessageContent(content: unknown): string {

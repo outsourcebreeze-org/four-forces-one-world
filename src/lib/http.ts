@@ -148,3 +148,15 @@ export function asNumber(value: unknown): number | null {
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+const SECRET_ENV = ["NEBIUS_API_KEY", "TAVILY_API_KEY", "FIRMS_MAP_KEY", "OPENAQ_API_KEY"] as const;
+
+/** Strip credential values before a feed error is stored or returned. */
+export function redactSecrets(message: string): string {
+  let out = message;
+  for (const name of SECRET_ENV) {
+    const value = process.env[name]?.trim();
+    if (value && value.length >= 6) out = out.split(value).join("[redacted]");
+  }
+  return out;
+}

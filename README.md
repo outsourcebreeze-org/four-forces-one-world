@@ -39,7 +39,7 @@ Copy `.env.example` to `.env`. Secrets stay in the environment. Nothing in this 
 | `NEBIUS_BASE_URL` | Optional | Default `https://api.tokenfactory.nebius.com/v1/` |
 | `DEMO_MODE` | Optional | `snapshot` forces the recorded feeds |
 
-Checked against Token Factory on 13 Oct 2026: one base URL serves these models. Nano is used for triage because it returns `content` directly. Super writes briefs. Super is a reasoning model, so brief calls send `max_tokens` of 1600. If `content` still comes back empty, the same prompt is sent to the triage model (Nano, unless you override it). Ultra is used only when you ask for a regional note.
+Checked against Token Factory on 13 Oct 2026: one base URL serves these models. Nano is used for triage because it returns `content` directly. Super writes briefs. Super is a reasoning model, so brief calls send `max_tokens` of 4000. If `content` still comes back empty, the same prompt is sent to the triage model (Nano, unless you override it). Ultra is used only when you ask for a regional note.
 
 Still needed for the full agent path: `NEBIUS_API_KEY` and `TAVILY_API_KEY`. FIRMS and OpenAQ are optional.
 
@@ -50,7 +50,7 @@ The globe colors situations by force. Filters cover force, severity, time window
 - Without Nebius, a template brief is filled from the source fields and marked demo. Cached examples in `data/demo-briefs.json` are used when the situation id matches the recording.
 - With Nebius, Nano triages, Super drafts, and the draft is rejected if it cites a number or a population that is not in the payload. Ultra drafts a regional note when other forces sit within 500 km.
 - With Tavily, a news search runs for that situation. Corroboration can raise confidence. Language such as “false alarm” or “did not happen” lowers it. Confidence stays capped when Tavily did not run.
-- GDELT is one throttled query per ingest (1 request / 5 seconds). Matching articles are attached as unconfirmed context.
+- GDELT is one query per ingest, at least 5 seconds apart. A 429 waits 12 seconds and then 28 seconds before the next try, and then the feed is marked down. Matching articles are attached as unconfirmed context.
 
 `POST /api/briefs` with `{ "situationId", "kind": "situation" | "regional" }`. `GET /api/events`, `/api/situations`, `/api/health`, and `/api/agent` are the other routes. `/api/agent` reports model ids and whether a key is present. It never returns the key.
 
@@ -75,7 +75,7 @@ Space-time clusters (situations)
              Demo template if the key is missing or the draft fails grounding
 ```
 
-Ingest is cached for eight minutes under `.cache/` (gitignored). If every live feed comes back empty, the UI switches to the recorded snapshot and says so.
+Ingest runs when an API route is called and is cached in memory for eight minutes. A copy is also written under `.cache/` locally, or `/tmp` on Vercel. A failed cache write does not discard a live result. If every live feed comes back empty, the UI switches to the recorded snapshot and says so. See [DEPLOY.md](DEPLOY.md) for Vercel.
 
 Nemotron and Token Factory are used only in `src/lib/agent/nemotron.ts` and the brief route. There is no other hosted Nebius service in this MVP: ingestion and the API run in the Next.js process so one command is enough. A later step can move ingest to a scheduled job and the API to a serverless endpoint without changing the event schema.
 

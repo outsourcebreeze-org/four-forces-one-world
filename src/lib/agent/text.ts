@@ -14,9 +14,12 @@ export function numberTokens(text: string): string[] {
   return text.match(NUMBER) ?? [];
 }
 
+const POLLUTANT_LABEL = /\b(?:pm\s*2\.5|pm2\.5|pm\s*10|pm10|no\s*2|no2|so\s*2|so2|o3|co2)\b/gi;
+
 export function unsupportedNumbers(text: string, allowedBlob: string): string[] {
+  const stripped = text.replace(POLLUTANT_LABEL, " ");
   const allowed = new Set(numberTokens(allowedBlob));
-  return numberTokens(text).filter((token) => !allowed.has(token));
+  return numberTokens(stripped).filter((token) => !allowed.has(token));
 }
 
 export function parseJsonLoose(text: string): unknown {
@@ -27,6 +30,7 @@ export function parseJsonLoose(text: string): unknown {
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
   if (start >= 0 && end > start) cleaned = cleaned.slice(start, end + 1);
+  cleaned = cleaned.replace(/,\s*([}\]])/g, "$1");
   return JSON.parse(cleaned);
 }
 

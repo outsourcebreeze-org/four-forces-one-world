@@ -1,3 +1,27 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+// Load .env for this one-shot script. Values stay in the process environment.
+try {
+  const raw = readFileSync(resolve(process.cwd(), ".env"), "utf8");
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+    const eq = trimmed.indexOf("=");
+    const name = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (!process.env[name]) process.env[name] = value;
+  }
+} catch {
+  // Missing .env is the demo path.
+}
+
 const base = (process.env.NEBIUS_BASE_URL || "https://api.tokenfactory.nebius.com/v1/").replace(/\/?$/, "/");
 const key = process.env.NEBIUS_API_KEY?.trim();
 const model = process.env.NEMOTRON_TRIAGE_MODEL?.trim() || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";

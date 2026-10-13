@@ -11,7 +11,7 @@ import type {
 import { applyCorroboration, type Corroboration } from "./confidence";
 import { buildDemoBrief, buildDemoRegionalBrief } from "./demo-brief";
 import { completeJson, modelSettings } from "./nemotron";
-import { briefDraftSchema } from "./schema";
+import { briefDraftSchema, normalizeBriefDraft } from "./schema";
 import { limitWords, parseJsonLoose, sharesStory, unsupportedNumbers, wordCount } from "./text";
 
 const SYSTEM = `You write civil public-safety situation briefs for emergency managers.
@@ -41,6 +41,17 @@ function allowsPopulation(events: HazardEvent[]): boolean {
   return events.some((event) =>
     Object.keys(event.details).some((key) => /population|people|fatal|exposed|injured/i.test(key)),
   );
+}
+
+function scrubUnsupportedNumbers(draft: Draft, payload: unknown): Draft {
+  const blob = allowedBlob(payload);
+  const drop = (text: string) =>
+    text
+      .split(/(?<=[.!?])\s+/)
+      .filter((sentence) => unsupportedNumbers(sentence, blob).length === 0)
+      .join(" ")
+      .trim();
+  return { ...draft, headline: drop(draft.headline), summary: drop(draft.summary) };
 }
 
 function groundingProblems(draft: Draft, payload: unknown, events: HazardEvent[]): string[] {
@@ -201,15 +212,28 @@ ${JSON.stringify(payload)}`,
       problems = ["Response was not JSON."];
       continue;
     }
-    const checked = briefDraftSchema.safeParse(parsed);
+    const checked = briefDraftSchema.safeParse(normalizeBriefDraft(parsed));
     if (!checked.success) {
-      problems = ["JSON was missing required brief fields."];
+      problems = checked.error.issues
+        .slice(0, 6)
+        .map((issue) => `${issue.path.join(".") || "root"}: ${issue.message}`);
       continue;
     }
-    problems = groundingProblems(checked.data, payload, events);
+    let grounded = checked.data;
+    problems = groundingProblems(grounded, payload, events);
+    if (problems.length && problems.every((problem) => problem.startsWith("Unsupported numbers:"))) {
+      const scrubbed = scrubUnsupportedNumbers(grounded, payload);
+      const again = groundingProblems(scrubbed, payload, events);
+      if (!again.length && scrubbed.headline.length >= 3 && wordCount(scrubbed.summary) >= 18) {
+        grounded = scrubbed;
+        problems = [];
+      } else if (again.length) {
+        problems = again;
+      }
+    }
     if (problems.length) continue;
     return {
-      brief: cleanDraft(checked.data, events, []),
+      brief: cleanDraft(grounded, events, []),
       model: lastModel,
       emptyContentFallback: fellBack,
     };

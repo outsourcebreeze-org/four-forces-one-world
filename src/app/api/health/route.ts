@@ -2,6 +2,7 @@ import { getWorld } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function GET() {
   const world = await getWorld();

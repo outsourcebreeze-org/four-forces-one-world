@@ -7,6 +7,7 @@ import {
   asNumber,
   asRecord,
   asString,
+  FeedError,
   fetchJson,
   fetchText,
   isoDaysAgo,
@@ -416,12 +417,28 @@ export async function fetchOpenMeteo(): Promise<{ flood: HazardEvent[]; air: Haz
   return { flood: parseOpenMeteoFlood(floodPayload), air: parseOpenMeteoAir(airPayload) };
 }
 
+/** Minimum gap between GDELT requests, including a retry. */
+export const GDELT_MIN_GAP_MS = 5_000;
+
+/**
+ * Extra wait after HTTP 429, before the next try.
+ * Index 0 is the first retry. A null delay means stop.
+ */
+export const GDELT_429_BACKOFF_MS = [12_000, 28_000] as const;
+
+/** Stop retrying once the next wait would push this call past the serverless limit. */
+export const GDELT_RETRY_BUDGET_MS = 50_000;
+
 let gdeltReadyAt = 0;
+
+export function gdeltRetryDelayMs(retryIndex: number): number | null {
+  return GDELT_429_BACKOFF_MS[retryIndex] ?? null;
+}
 
 export async function throttleGdelt(): Promise<void> {
   const wait = gdeltReadyAt - Date.now();
   if (wait > 0) await sleep(wait);
-  gdeltReadyAt = Date.now() + 5000;
+  gdeltReadyAt = Date.now() + GDELT_MIN_GAP_MS;
 }
 
 export function parseGdelt(payload: unknown): NewsArticle[] {
@@ -450,19 +467,37 @@ export function parseGdelt(payload: unknown): NewsArticle[] {
 }
 
 export async function fetchGdelt(): Promise<NewsArticle[]> {
-  await throttleGdelt();
   const query = "(earthquake OR wildfire OR flood OR cyclone OR typhoon OR volcano) sourcelang:english";
   const url =
     "https://api.gdeltproject.org/api/v2/doc/doc?query=" +
     encodeURIComponent(query) +
     "&mode=ArtList&maxrecords=12&format=json&sort=DateDesc&timespan=2d";
-  const payload = await fetchJson(url, { timeoutMs: 20000 });
-  return parseGdelt(payload);
+  const attempts = GDELT_429_BACKOFF_MS.length + 1;
+  const started = Date.now();
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await throttleGdelt();
+    try {
+      const payload = await fetchJson(url, { timeoutMs: 20000 });
+      return parseGdelt(payload);
+    } catch (error) {
+      lastError = error;
+      const status = error instanceof FeedError ? error.status : null;
+      const delay = gdeltRetryDelayMs(attempt);
+      const room = GDELT_RETRY_BUDGET_MS - (Date.now() - started);
+      if (status !== 429 || delay == null || delay > room) throw error;
+      gdeltReadyAt = Math.max(gdeltReadyAt, Date.now() + delay);
+      await sleep(delay);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new FeedError("GDELT failed");
 }
 
-function firmsConfidenceHigh(value: string): boolean {
+function firmsConfidenceKept(value: string): boolean {
   const text = value.toLowerCase();
-  if (text === "h" || text === "high" || text === "nominal") return text !== "nominal" ? text === "h" || text === "high" : false;
+  if (text === "l" || text === "low") return false;
+  // VIIRS labels a real hotspot "nominal" much more often than "high".
+  if (text === "h" || text === "high" || text === "n" || text === "nominal") return true;
   const numeric = Number(value);
   return Number.isFinite(numeric) && numeric >= 80;
 }
@@ -482,7 +517,7 @@ export function parseFirms(csv: string): HazardEvent[] {
   const kept = new Map<string, HazardEvent>();
   for (const line of lines.slice(1)) {
     const cells = line.split(",");
-    if (confI >= 0 && !firmsConfidenceHigh(cells[confI] ?? "")) continue;
+    if (confI >= 0 && !firmsConfidenceKept(cells[confI] ?? "")) continue;
     const lat = Number(cells[latI]);
     const lon = Number(cells[lonI]);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
@@ -523,7 +558,7 @@ export function parseFirms(csv: string): HazardEvent[] {
 export async function fetchFirms(mapKey: string): Promise<HazardEvent[]> {
   const areas = ["-130,-50,-30,55", "-20,-35,55,40", "60,-40,160,50"];
   const batches = await mapPool(areas, 2, async (area) => {
-    const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(mapKey)}/VIIRS_SNPP_NRT/${area}/1`;
+    const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(mapKey)}/VIIRS_SNPP_NRT/${area}/2`;
     const csv = await fetchText(url, { timeoutMs: 25000, maxBytes: 3_000_000 });
     return parseFirms(csv);
   });
@@ -533,13 +568,13 @@ export async function fetchFirms(mapKey: string): Promise<HazardEvent[]> {
 }
 
 export function parseOpenAqLatest(
-  location: { id: string; name: string; lat: number; lon: number },
+  location: { id: string; name: string; lat: number; lon: number; sensorId: number },
   payload: unknown,
 ): HazardEvent | null {
   const results = asArray(asRecord(payload)?.results);
   const pm = results
     .map((item) => asRecord(item))
-    .find((item) => asString(asRecord(item?.parameter)?.name)?.toLowerCase() === "pm25");
+    .find((item) => asNumber(item?.sensorsId) === location.sensorId);
   const value = asNumber(pm?.value);
   if (!pm || value == null) return null;
   const severity = severityForPm25(value);
@@ -569,8 +604,9 @@ export function parseOpenAqLatest(
 }
 
 export async function fetchOpenAq(apiKey: string): Promise<HazardEvent[]> {
+  // v3 only accepts order_by=id. Newest location ids are the active stations.
   const payload = await fetchJson<unknown>(
-    "https://api.openaq.org/v3/locations?limit=12&parameters_id=2&order_by=lastUpdated&sort_order=desc",
+    "https://api.openaq.org/v3/locations?limit=16&parameters_id=2&order_by=id&sort_order=desc",
     { timeoutMs: 15000, headers: { "X-API-Key": apiKey } },
   );
   const locations = asArray(asRecord(payload)?.results)
@@ -581,11 +617,18 @@ export async function fetchOpenAq(apiKey: string): Promise<HazardEvent[]> {
       const name = asString(record?.name);
       const lat = asNumber(coordinates?.latitude);
       const lon = asNumber(coordinates?.longitude);
-      if (id == null || !name || lat == null || lon == null) return null;
-      return { id: String(id), name, lat, lon };
+      const sensor = asArray(record?.sensors)
+        .map((entry) => asRecord(entry))
+        .find((entry) => asString(asRecord(entry?.parameter)?.name)?.toLowerCase() === "pm25");
+      const sensorId = asNumber(sensor?.id);
+      if (id == null || !name || lat == null || lon == null || sensorId == null) return null;
+      return { id: String(id), name, lat, lon, sensorId };
     })
-    .filter((location): location is { id: string; name: string; lat: number; lon: number } => Boolean(location))
-    .slice(0, 8);
+    .filter(
+      (location): location is { id: string; name: string; lat: number; lon: number; sensorId: number } =>
+        Boolean(location),
+    )
+    .slice(0, 12);
   const readings = await mapPool(locations, 3, async (location) => {
     try {
       const latest = await fetchJson(
