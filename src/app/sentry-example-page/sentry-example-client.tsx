@@ -22,15 +22,14 @@ export function SentryExampleClient() {
       >
         Throw client test error
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          window.location.assign("/api/sentry-example-api");
-        }}
-        className="w-fit rounded-full border border-[#f6f1e6]/30 px-4 py-2 text-sm font-medium"
-      >
-        Throw server test error
-      </button>
+      <form action="/api/sentry-example-api">
+        <button
+          type="submit"
+          className="w-fit rounded-full border border-[#f6f1e6]/30 px-4 py-2 text-sm font-medium"
+        >
+          Throw server test error
+        </button>
+      </form>
     </main>
   );
 }

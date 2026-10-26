@@ -43,6 +43,7 @@ describe("sentry options", () => {
   it("defaults the trace sample rate to 0.1 and accepts 0 through 1", () => {
     expect(parseTracesSampleRate(undefined)).toBe(0.1);
     expect(parseTracesSampleRate("")).toBe(0.1);
+    expect(parseTracesSampleRate("  ")).toBe(0.1);
     expect(parseTracesSampleRate("nope")).toBe(0.1);
     expect(parseTracesSampleRate("2")).toBe(0.1);
     expect(parseTracesSampleRate("-0.1")).toBe(0.1);

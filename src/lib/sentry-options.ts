@@ -1,4 +1,4 @@
-import { readServerEnv } from "@/lib/env";
+import { readServerEnv } from "./env";
 
 /** Default performance trace sample rate when no env override is set. */
 export const DEFAULT_SENTRY_TRACES_SAMPLE_RATE = 0.1;
@@ -31,7 +31,9 @@ export function sentryMonitoringOptions(dsn: string, tracesSampleRate: number) {
 
 export function parseTracesSampleRate(raw: string | undefined): number {
   if (raw == null) return DEFAULT_SENTRY_TRACES_SAMPLE_RATE;
-  const value = Number(raw.trim());
+  const trimmed = raw.trim();
+  if (!trimmed) return DEFAULT_SENTRY_TRACES_SAMPLE_RATE;
+  const value = Number(trimmed);
   if (!Number.isFinite(value) || value < 0 || value > 1) {
     return DEFAULT_SENTRY_TRACES_SAMPLE_RATE;
   }
@@ -62,14 +64,14 @@ export function serverTracesSampleRate(env: NodeJS.ProcessEnv = process.env): nu
 export function clientSentryDsn(raw: string | undefined): string {
   return readServerEnv("NEXT_PUBLIC_SENTRY_DSN", {
     NEXT_PUBLIC_SENTRY_DSN: raw,
-  } as NodeJS.ProcessEnv);
+  } as unknown as NodeJS.ProcessEnv);
 }
 
 /** Browser trace sample rate. Pass `process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`. */
 export function clientTracesSampleRate(raw: string | undefined): number {
   const shared = readServerEnv("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE", {
     NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE: raw,
-  } as NodeJS.ProcessEnv);
+  } as unknown as NodeJS.ProcessEnv);
   return parseTracesSampleRate(shared || undefined);
 }
 
