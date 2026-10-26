@@ -23,7 +23,18 @@ Optional:
 - `NEMOTRON_ANALYST_MODEL` — default `nvidia/Nemotron-3-Ultra-550b-a55b`
 - `DEMO_MODE` — leave unset for live feeds. `snapshot` serves `data/demo-snapshot.json` only.
 
-The app still boots with no keys: public feeds stay live and briefs are labeled demo. FIRMS and OpenAQ are skipped until their keys are set.
+Optional error and performance monitoring. Leave the DSNs empty to keep Sentry off. The build succeeds without `SENTRY_AUTH_TOKEN`.
+
+- `NEXT_PUBLIC_SENTRY_DSN` — browser DSN. Set it before the build. It is inlined into the client bundle.
+- `SENTRY_DSN` — server and edge DSN. Falls back to `NEXT_PUBLIC_SENTRY_DSN` when empty. Read at runtime.
+- `SENTRY_AUTH_TOKEN` — source map upload. Do not commit it. Omit it to skip upload.
+- `SENTRY_ORG` — default `outsourcebreeze`
+- `SENTRY_PROJECT` — default `four-forces-one-world`
+- `SENTRY_TRACES_SAMPLE_RATE` — server and edge, default `0.1`
+- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` — browser, default `0.1`
+- `SENTRY_DEBUG_ROUTE` — set to `1` only to open the test error routes. Leave unset on the public demo.
+
+The app still boots with no keys: public feeds stay live and briefs are labeled demo. FIRMS and OpenAQ are skipped until their keys are set. Sentry stays off until a DSN is set.
 
 ## Function time
 

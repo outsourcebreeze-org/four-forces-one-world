@@ -58,12 +58,30 @@ Copy `.env.example` to `.env`. Secrets stay in the environment. Nothing in this 
 | `NEMOTRON_ANALYST_MODEL` | Optional | Default `nvidia/Nemotron-3-Ultra-550b-a55b` |
 | `NEBIUS_BASE_URL` | Optional | Default `https://api.tokenfactory.nebius.com/v1/` |
 | `DEMO_MODE` | Optional | `snapshot` forces the recorded feeds |
+| `NEXT_PUBLIC_SENTRY_DSN` | Optional | Browser Sentry DSN. Empty leaves the client SDK off. Inlined at build time |
+| `SENTRY_DSN` | Optional | Server and edge Sentry DSN. Falls back to `NEXT_PUBLIC_SENTRY_DSN` |
+| `SENTRY_AUTH_TOKEN` | Optional | Uploads source maps during `next build`. The build succeeds without it |
+| `SENTRY_ORG` | Optional | Sentry org slug. Default `outsourcebreeze` |
+| `SENTRY_PROJECT` | Optional | Sentry project slug. Default `four-forces-one-world` |
+| `SENTRY_TRACES_SAMPLE_RATE` | Optional | Server and edge trace sample rate, 0 to 1. Default `0.1`. Falls back to the public rate |
+| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | Optional | Browser trace sample rate, 0 to 1. Default `0.1` |
+| `SENTRY_DEBUG_ROUTE` | Optional | Set to `1` to open `/sentry-example-page` and `/api/sentry-example-api`. Otherwise those routes are not found |
 
 Checked against Token Factory on 13 Oct 2026: one base URL serves these models. Nano is used for triage because it returns `content` directly. Super writes situation briefs. Super is a reasoning model, so brief calls send `max_tokens` of 4000. If `content` still comes back empty, the same prompt is sent to the triage model (Nano, unless you override it).
 
 Ultra is `nvidia/Nemotron-3-Ultra-550b-a55b` unless `NEMOTRON_ANALYST_MODEL` overrides it. It is called in one place: a regional note. The situation panel button **Regional note (Ultra)** (`src/components/dashboard.tsx`) posts `{ situationId, kind: "regional" }` to `POST /api/briefs`. `createBrief` in `src/lib/agent/pipeline.ts` then calls `draftWithModel` with role `analyst` only for that kind. `completeJson` in `src/lib/agent/nemotron.ts` sends the analyst role to the Ultra model. A single-situation brief uses Super, and triage uses Nano. Ultra is not used for ingest.
 
 The production deployment has `NEBIUS_API_KEY` and `TAVILY_API_KEY` configured. FIRMS and OpenAQ stay optional. A local checkout still needs the Nebius and Tavily keys in `.env` if you want live briefs and news verification on your own machine.
+
+## Monitoring
+
+Sentry is optional. With `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` unset, the SDK does not start and the globe, feeds, and briefs behave as they do without it.
+
+`NEXT_PUBLIC_SENTRY_DSN` is the browser DSN and is included in the client bundle, so set it in the host before the build. `SENTRY_DSN` is read on the server and edge at runtime and falls back to the public DSN. Do not commit either value. `SENTRY_AUTH_TOKEN` is the secret used only to upload source maps. Leave it unset and the build still succeeds; source maps are not uploaded.
+
+Traces default to 10 percent (`0.1`). Personal data is not sent (`sendDefaultPii` is false, and the SDK 11 `dataCollection` flags for user info, cookies, headers, bodies, query strings, and stack variables are off). Session Replay is not enabled. `SENTRY_ORG` defaults to `outsourcebreeze` and `SENTRY_PROJECT` defaults to `four-forces-one-world`.
+
+Set `SENTRY_DEBUG_ROUTE=1` only when you want to fire a test error. `/sentry-example-page` then has a client button and a server button. `/api/sentry-example-api` throws. Any other value, including unset, makes both routes respond as not found. Leave this unset on the public demo.
 
 ## What you can do
 

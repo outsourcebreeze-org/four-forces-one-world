@@ -44,6 +44,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# sentry cli — may contain an auth token
+.sentryclirc
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
