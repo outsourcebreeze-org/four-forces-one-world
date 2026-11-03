@@ -56,6 +56,14 @@ export function assembleWorld(input: {
   };
 }
 
+export async function recordedSnapshot(
+  notice = "Showing the recorded snapshot. Live feeds were not used.",
+): Promise<WorldState> {
+  const world = await readSnapshot();
+  world.notice = notice;
+  return world;
+}
+
 async function readSnapshot(): Promise<WorldState> {
   try {
     const raw = await readFile(snapshotPath, "utf8");

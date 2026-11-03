@@ -13,6 +13,8 @@ import {
 import { briefDraftSchema, normalizeBriefDraft } from "../src/lib/agent/schema";
 import { numberTokens, parseJsonLoose, unsupportedNumbers, wordCount } from "../src/lib/agent/text";
 import { readServerEnv, tavilyKeyStatus } from "../src/lib/env";
+import { promiseWithin } from "../src/lib/http";
+import { fetchWorld } from "../src/lib/world-client";
 import { clusterEvents } from "../src/lib/cluster";
 import { DEFAULT_MODELS } from "../src/lib/constants";
 import { assessFlood } from "../src/lib/flood";
@@ -172,6 +174,32 @@ describe("feeds", () => {
     expect(gdeltRetryDelayMs(0)).toBe(12_000);
     expect(gdeltRetryDelayMs(1)).toBe(28_000);
     expect(gdeltRetryDelayMs(2)).toBeNull();
+  });
+
+  it("stops waiting when a feed outlasts its budget", async () => {
+    await expect(promiseWithin(new Promise(() => {}), 30)).rejects.toThrow(/Timed out after 30ms/);
+    await expect(promiseWithin(Promise.resolve("ok"), 50)).resolves.toBe("ok");
+  });
+
+  it("falls back to the recorded snapshot when live events do not return", async () => {
+    const calls: string[] = [];
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.includes("snapshot=1")) {
+        return new Response(JSON.stringify({ dataMode: "demo-snapshot", situations: [] }), { status: 200 });
+      }
+      await new Promise((_resolve, reject) => {
+        const abort = () => reject(new DOMException("The operation was aborted.", "AbortError"));
+        if (init?.signal?.aborted) abort();
+        init?.signal?.addEventListener("abort", abort);
+      });
+      return new Response("hang", { status: 200 });
+    }) as typeof fetch;
+    const world = await fetchWorld({ fetchImpl, timeoutMs: 40 });
+    expect(world.dataMode).toBe("demo-snapshot");
+    expect(calls.some((url) => url.endsWith("/api/events"))).toBe(true);
+    expect(calls.some((url) => url.includes("snapshot=1"))).toBe(true);
   });
 });
 

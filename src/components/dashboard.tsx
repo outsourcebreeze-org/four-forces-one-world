@@ -11,6 +11,7 @@ import { FORCE_META, OPEN_METEO_NOTICE, WATCH_AREAS } from "@/lib/constants";
 import { haversineKm } from "@/lib/geo";
 import { SEVERITY_LABEL } from "@/lib/severity";
 import { FORCES, type BriefResponse, type Force, type Situation, type WorldState } from "@/lib/types";
+import { fetchWorld } from "@/lib/world-client";
 
 const ICONS = { water: Droplets, air: Wind, land: Mountain, fire: Flame };
 
@@ -35,19 +36,22 @@ export function Dashboard() {
   const [briefLoading, setBriefLoading] = useState(false);
   const [briefError, setBriefError] = useState<string | null>(null);
   const briefRequest = useRef(0);
+  const loadRequest = useRef(0);
 
   async function load(refresh = false) {
+    const requestId = loadRequest.current + 1;
+    loadRequest.current = requestId;
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(refresh ? "/api/events?refresh=1" : "/api/events");
-      if (!response.ok) throw new Error(`Events request failed (${response.status})`);
-      const payload = (await response.json()) as WorldState;
+      const payload = await fetchWorld({ refresh });
+      if (requestId !== loadRequest.current) return;
       setWorld(payload);
     } catch (cause) {
+      if (requestId !== loadRequest.current) return;
       setError(cause instanceof Error ? cause.message : "Could not load events");
     } finally {
-      setLoading(false);
+      if (requestId === loadRequest.current) setLoading(false);
     }
   }
 
@@ -229,13 +233,12 @@ export function Dashboard() {
         </aside>
 
         <main className="relative order-1 h-[52vh] min-h-[320px] lg:order-2 lg:h-auto">
+          <GlobeView situations={visible} selectedId={selected?.id ?? null} onSelect={choose} />
           {loading && !world ? (
-            <div className="flex h-full items-center justify-center text-sm text-[#f6f1e6]/70">
-              Gathering public hazard feeds…
-            </div>
-          ) : (
-            <GlobeView situations={visible} selectedId={selected?.id ?? null} onSelect={choose} />
-          )}
+            <p className="pointer-events-none absolute bottom-4 left-4 right-4 text-center text-sm text-[#f6f1e6]/80">
+              Loading live feeds…
+            </p>
+          ) : null}
           {error ? (
             <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-[#f6f1e6] p-3 text-sm text-[#1a1714]">
               {error}
