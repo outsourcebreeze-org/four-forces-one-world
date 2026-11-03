@@ -149,6 +149,32 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Settle with the original result, or reject once `ms` has passed. A late result is ignored. */
+export function promiseWithin<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let settled = false;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new FeedError(`Timed out after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 const SECRET_ENV = ["NEBIUS_API_KEY", "TAVILY_API_KEY", "FIRMS_MAP_KEY", "OPENAQ_API_KEY"] as const;
 
 /** Strip credential values before a feed error is stored or returned. */

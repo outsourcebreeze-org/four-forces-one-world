@@ -18,7 +18,7 @@ Nebius Global AI Hackathon. Track: Best Apps and Agents. Entrant: OutsourceBreez
 
 The live demo already has the Nebius and Tavily keys configured. You do not need to paste secrets into the site.
 
-1. Open the [live demo](https://four-forces-one-world.vercel.app) and wait for the globe. The first load pulls public feeds and can take a few seconds.
+1. Open the [live demo](https://four-forces-one-world.vercel.app). The globe is drawn immediately. Live feeds fill it in, and a slow or failed feed falls back to the recorded snapshot instead of leaving the page on the loading line.
 2. Filter by force (water, air, land, fire), severity, time window, text, or a watch-area city. The side list is the keyboard path. Selecting a row or a globe point shows the underlying public records.
 3. Choose **Ask Nemotron for a brief**. A live brief is badged **Live brief**, not **Demo**. The footer names the models. Lightning triages, then Super VL drafts. A **Tavily** mark means the news check ran. Confidence stays capped when that check did not run.
 4. When the panel says other forces sit within 500 km, choose **Regional note (Ultra)**. That is the only Ultra call. The footer should include `nvidia/Nemotron-3-Ultra-550b-a55b` (or the `NEMOTRON_ANALYST_MODEL` override). A **Demo** badge means the model reply failed grounding and the template was used instead.

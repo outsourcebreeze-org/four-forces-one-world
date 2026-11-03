@@ -9,8 +9,11 @@ import {
   fetchUsgs,
 } from "./feeds";
 import { readServerEnv } from "./env";
-import { redactSecrets } from "./http";
+import { promiseWithin, redactSecrets } from "./http";
 import type { HazardEvent, NewsArticle, SourceHealth } from "./types";
+
+/** One slow feed, usually GDELT after a 429, must not hold the globe response. */
+export const INGEST_JOB_BUDGET_MS = 10_000;
 
 type Job = {
   source: string;
@@ -21,7 +24,7 @@ type Job = {
 async function runJob(job: Job): Promise<SourceHealth & { events: HazardEvent[]; articles: NewsArticle[] }> {
   const started = Date.now();
   try {
-    const result = await job.run();
+    const result = await promiseWithin(job.run(), INGEST_JOB_BUDGET_MS);
     return {
       source: job.source,
       attribution: job.attribution,

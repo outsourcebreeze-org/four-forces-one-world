@@ -59,52 +59,80 @@ export function GlobeView({
     const element = host.current;
     if (!element) return;
     let disposed = false;
+    let resize: (() => void) | null = null;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     (async () => {
-      const { default: Globe } = await import("globe.gl");
-      if (disposed || !host.current) return;
-      const instance = new Globe(host.current) as unknown as GlobeApi;
-      instance
-        .backgroundColor("#100e0c")
-        .globeImageUrl("/textures/earth-blue-marble.jpg")
-        .bumpImageUrl("/textures/earth-topology.png")
-        .showAtmosphere(true)
-        .atmosphereColor("#c4b49a")
-        .atmosphereAltitude(0.16)
-        .pointLat("lat")
-        .pointLng("lon")
-        .pointColor("color")
-        .pointAltitude(0.012)
-        .pointRadius("radius")
-        .pointLabel((point) => {
-          return `<div style="font:13px/1.35 Outfit,sans-serif;background:#f6f1e6;color:#1a1714;padding:8px 10px;border-radius:10px;max-width:240px"><strong>${escapeHtml(point.title)}</strong><div style="margin-top:4px;opacity:.75">${escapeHtml(point.force)} · severity ${point.severity}</div></div>`;
-        })
-        .onPointClick((point) => onSelectRef.current(point.id))
-        .ringLat("lat")
-        .ringLng("lon")
-        .ringColor(() => "rgba(240,180,90,0.55)")
-        .ringMaxRadius(4)
-        .ringPropagationSpeed(1.4)
-        .ringRepeatPeriod(900)
-        .pointOfView({ lat: 18, lng: 12, altitude: 2.35 });
-      const controls = instance.controls();
-      controls.autoRotate = !reduced;
-      controls.autoRotateSpeed = 0.28;
-      globe.current = instance;
-      const resize = () => {
-        if (!host.current || !globe.current) return;
-        globe.current.width(host.current.clientWidth).height(host.current.clientHeight);
-      };
-      resize();
-      observer.current = new ResizeObserver(resize);
-      observer.current.observe(host.current);
-      if (!disposed) setReady(true);
+      try {
+        const { default: Globe } = await import("globe.gl");
+        if (disposed || !host.current) return;
+        const instance = new Globe(host.current, {
+          rendererConfig: {
+            antialias: false,
+            alpha: false,
+            powerPreference: "default",
+            failIfMajorPerformanceCaveat: false,
+          },
+        }) as unknown as GlobeApi;
+        if (disposed) {
+          instance._destructor();
+          return;
+        }
+        instance
+          .backgroundColor("#100e0c")
+          .globeImageUrl("/textures/earth-blue-marble.jpg")
+          .bumpImageUrl("/textures/earth-topology.png")
+          .showAtmosphere(true)
+          .atmosphereColor("#c4b49a")
+          .atmosphereAltitude(0.16)
+          .pointLat("lat")
+          .pointLng("lon")
+          .pointColor("color")
+          .pointAltitude(0.012)
+          .pointRadius("radius")
+          .pointLabel((point) => {
+            return `<div style="font:13px/1.35 Outfit,sans-serif;background:#f6f1e6;color:#1a1714;padding:8px 10px;border-radius:10px;max-width:240px"><strong>${escapeHtml(point.title)}</strong><div style="margin-top:4px;opacity:.75">${escapeHtml(point.force)} · severity ${point.severity}</div></div>`;
+          })
+          .onPointClick((point) => onSelectRef.current(point.id))
+          .ringLat("lat")
+          .ringLng("lon")
+          .ringColor(() => "rgba(240,180,90,0.55)")
+          .ringMaxRadius(4)
+          .ringPropagationSpeed(1.4)
+          .ringRepeatPeriod(900)
+          .pointOfView({ lat: 18, lng: 12, altitude: 2.35 });
+        const controls = instance.controls();
+        controls.autoRotate = !reduced;
+        controls.autoRotateSpeed = 0.28;
+        globe.current = instance;
+        resize = () => {
+          const node = host.current;
+          if (!node || !globe.current) return;
+          const bounds = node.getBoundingClientRect();
+          const width = Math.floor(node.clientWidth || bounds.width);
+          const height = Math.floor(node.clientHeight || bounds.height);
+          if (width < 2 || height < 2) return;
+          globe.current.width(width).height(height);
+        };
+        resize();
+        requestAnimationFrame(() => resize?.());
+        observer.current = new ResizeObserver(() => resize?.());
+        observer.current.observe(host.current);
+        window.addEventListener("resize", resize);
+        window.visualViewport?.addEventListener("resize", resize);
+        if (!disposed) setReady(true);
+      } catch {
+        if (!disposed) setReady(false);
+      }
     })();
 
     return () => {
       disposed = true;
       observer.current?.disconnect();
+      if (resize) {
+        window.removeEventListener("resize", resize);
+        window.visualViewport?.removeEventListener("resize", resize);
+      }
       globe.current?._destructor();
       globe.current = null;
     };
@@ -127,5 +155,5 @@ export function GlobeView({
     }
   }, [situations, selectedId, ready]);
 
-  return <div ref={host} className="h-full w-full" />;
+  return <div ref={host} className="h-full min-h-[320px] w-full" />;
 }
