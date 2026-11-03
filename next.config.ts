@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Keep future `next build` reminders on the security policy.
+    agentUpgrade: "security",
+  },
   // The dev server is bound on 0.0.0.0; browsers that open 127.0.0.1 must still receive JS.
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   turbopack: {
