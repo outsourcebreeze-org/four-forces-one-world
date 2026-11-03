@@ -371,7 +371,7 @@ function BriefView({ brief }: { brief: BriefResponse }) {
       <p className="mt-3 text-[11px] uppercase tracking-[0.14em] text-[#1a1714]/45">
         {pipeline.mode}
         {pipeline.models.length ? ` · ${pipeline.models.join(" → ")}` : ""}
-        {pipeline.emptyContentFallback ? " · empty Super reply, used Nano" : ""}
+        {pipeline.emptyContentFallback ? " · empty reply, used triage model" : ""}
         {pipeline.verifiedWithTavily ? " · Tavily" : ""}
         {pipeline.cached ? " · cached" : ""}
       </p>

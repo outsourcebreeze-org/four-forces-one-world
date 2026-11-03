@@ -20,11 +20,11 @@ The live demo already has the Nebius and Tavily keys configured. You do not need
 
 1. Open the [live demo](https://four-forces-one-world.vercel.app) and wait for the globe. The first load pulls public feeds and can take a few seconds.
 2. Filter by force (water, air, land, fire), severity, time window, text, or a watch-area city. The side list is the keyboard path. Selecting a row or a globe point shows the underlying public records.
-3. Choose **Ask Nemotron for a brief**. A live brief is badged **Live brief**, not **Demo**. The footer names the models. Nano triages, then Super drafts. A **Tavily** mark means the news check ran. Confidence stays capped when that check did not run.
+3. Choose **Ask Nemotron for a brief**. A live brief is badged **Live brief**, not **Demo**. The footer names the models. Lightning triages, then Super VL drafts. A **Tavily** mark means the news check ran. Confidence stays capped when that check did not run.
 4. When the panel says other forces sit within 500 km, choose **Regional note (Ultra)**. That is the only Ultra call. The footer should include `nvidia/Nemotron-3-Ultra-550b-a55b` (or the `NEMOTRON_ANALYST_MODEL` override). A **Demo** badge means the model reply failed grounding and the template was used instead.
 5. Open [https://four-forces-one-world.vercel.app/api/health](https://four-forces-one-world.vercel.app/api/health). `tavilyConfigured` is `true` when the Tavily key is present. The response does not include the key or its length.
 6. Select a situation in the United States, such as a western wildfire or a flood warning. The side panel **Live cameras** section lists USGS river cameras within 50 km, with a still that refreshes about once a minute, a distance, and a link to HIVIS. A situation with nothing nearby, including most places outside the United States and Québec, says no camera was found. Québec matches open the official Québec 511 viewer instead of embedding the video.
-7. Optional local checks, from a checkout with dependencies installed: `npm test`, then `npm run build`. `npm run hello-nemotron` calls Nemotron Nano when `NEBIUS_API_KEY` is set and prints a skip message when it is not.
+7. Optional local checks, from a checkout with dependencies installed: `npm test`, then `npm run build`. `npm run hello-nemotron` calls Nemotron Lightning when `NEBIUS_API_KEY` is set and prints a skip message when it is not.
 
 ## Run
 
@@ -41,7 +41,7 @@ npm test
 npm run hello-nemotron
 ```
 
-`hello-nemotron` prints a skip message when `NEBIUS_API_KEY` is missing, and calls Nemotron Nano when the key is set.
+`hello-nemotron` prints a skip message when `NEBIUS_API_KEY` is missing, and calls Nemotron Lightning when the key is set.
 
 ## Keys
 
@@ -53,15 +53,15 @@ Copy `.env.example` to `.env`. Secrets stay in the environment. Nothing in this 
 | `TAVILY_API_KEY` | For news verification | Tavily search while a brief is written |
 | `FIRMS_MAP_KEY` | Optional | NASA FIRMS active fires |
 | `OPENAQ_API_KEY` | Optional | OpenAQ station PM2.5 |
-| `NEMOTRON_TRIAGE_MODEL` | Optional | Default `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` |
-| `NEMOTRON_BRIEF_MODEL` | Optional | Default `nvidia/nemotron-3-super-120b-a12b` |
+| `NEMOTRON_TRIAGE_MODEL` | Optional | Default `nvidia/Nemotron-3_5-Lightning` |
+| `NEMOTRON_BRIEF_MODEL` | Optional | Default `nvidia/Nemotron-3.5-Super-VL` |
 | `NEMOTRON_ANALYST_MODEL` | Optional | Default `nvidia/Nemotron-3-Ultra-550b-a55b` |
 | `NEBIUS_BASE_URL` | Optional | Default `https://api.tokenfactory.nebius.com/v1/` |
 | `DEMO_MODE` | Optional | `snapshot` forces the recorded feeds |
 
-Checked against Token Factory on 13 Oct 2026: one base URL serves these models. Nano is used for triage because it returns `content` directly. Super writes situation briefs. Super is a reasoning model, so brief calls send `max_tokens` of 4000. If `content` still comes back empty, the same prompt is sent to the triage model (Nano, unless you override it).
+Checked against the Token Factory retirement on 9 Nov 2026: one base URL serves these models. Triage uses `nvidia/Nemotron-3_5-Lightning`. Situation briefs use `nvidia/Nemotron-3.5-Super-VL`. Both reason by default, so those calls turn thinking off and request a JSON object. That puts one JSON object in `content` for the brief parser. Brief calls still send `max_tokens` of 4000. If `content` comes back empty, the same prompt is sent to the triage model.
 
-Ultra is `nvidia/Nemotron-3-Ultra-550b-a55b` unless `NEMOTRON_ANALYST_MODEL` overrides it. It is called in one place: a regional note. The situation panel button **Regional note (Ultra)** (`src/components/dashboard.tsx`) posts `{ situationId, kind: "regional" }` to `POST /api/briefs`. `createBrief` in `src/lib/agent/pipeline.ts` then calls `draftWithModel` with role `analyst` only for that kind. `completeJson` in `src/lib/agent/nemotron.ts` sends the analyst role to the Ultra model. A single-situation brief uses Super, and triage uses Nano. Ultra is not used for ingest.
+Ultra is `nvidia/Nemotron-3-Ultra-550b-a55b` unless `NEMOTRON_ANALYST_MODEL` overrides it. It is called in one place: a regional note. The situation panel button **Regional note (Ultra)** (`src/components/dashboard.tsx`) posts `{ situationId, kind: "regional" }` to `POST /api/briefs`. `createBrief` in `src/lib/agent/pipeline.ts` then calls `draftWithModel` with role `analyst` only for that kind. `completeJson` in `src/lib/agent/nemotron.ts` sends the analyst role to the Ultra model and leaves that request on the previous shape (no JSON mode, thinking left on). A single-situation brief uses Super VL, and triage uses Lightning. Ultra is not used for ingest.
 
 The production deployment has `NEBIUS_API_KEY` and `TAVILY_API_KEY` configured. FIRMS and OpenAQ stay optional. A local checkout still needs the Nebius and Tavily keys in `.env` if you want live briefs and news verification on your own machine.
 
@@ -70,7 +70,7 @@ The production deployment has `NEBIUS_API_KEY` and `TAVILY_API_KEY` configured. 
 The globe colors situations by force. Filters cover force, severity, time window, a text search, and a watch-area city. The side list is the keyboard path. Selecting a situation shows the underlying records.
 
 - Without Nebius, a template brief is filled from the source fields and marked demo. Cached examples in `data/demo-briefs.json` are used when the situation id matches the recording.
-- With Nebius, Nano triages, Super drafts, and the draft is rejected if it cites a number or a population that is not in the payload. Ultra drafts a regional note when other forces sit within 500 km. That regional call is the analyst role described above.
+- With Nebius, Lightning triages, Super VL drafts, and the draft is rejected if it cites a number or a population that is not in the payload. Ultra drafts a regional note when other forces sit within 500 km. That regional call is the analyst role described above.
 - With Tavily, a news search runs for that situation. Corroboration can raise confidence. Language such as “false alarm” or “did not happen” lowers it. Confidence stays capped when Tavily did not run.
 - GDELT is one query per ingest, at least 5 seconds apart. A 429 waits 12 seconds and then 28 seconds before the next try, and then the feed is marked down. Matching articles are attached as unconfirmed context.
 
@@ -104,7 +104,7 @@ Space-time clusters (situations)
         ├─ Globe UI (globe.gl, NASA Blue Marble)
         │
         └─ Brief pipeline
-             Nano triage → Super brief → Tavily + GDELT
+             Lightning triage → Super VL brief → Tavily + GDELT
              Ultra only for a regional note
              Demo template if the key is missing or the draft fails grounding
              Live cameras: USGS stills and Québec 511 links within 50 km

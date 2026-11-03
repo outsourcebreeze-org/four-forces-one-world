@@ -263,8 +263,7 @@ async function draftWithModel(
           content: `${instruction}
 Return JSON with keys: headline, summary, affectedArea, populationEstimate, confidence {level, score}, evidence [{title, url, source, stance, note}], contradictions, whatChanged, guidanceLinks [{title, url}].
 stance is agree, disagree, or unconfirmed.
-${problems.length ? `Fix these problems: ${problems.join(" ")} Do not mention any number that is not in the payload. If a number was rejected, delete it instead of guessing another figure.` : ""}
-Payload:
+${role === "brief" ? "The reply must be one JSON object and no other text: no markdown fence, and no thinking tags.\n" : ""}${problems.length ? `Fix these problems: ${problems.join(" ")} Do not mention any number that is not in the payload. If a number was rejected, delete it instead of guessing another figure.\n` : ""}Payload:
 ${JSON.stringify(payload)}`,
         },
       ],
@@ -369,7 +368,7 @@ export async function createBrief(input: {
             {
               role: "system",
               content:
-                "You triage a civil hazard. Reply with JSON only: {\"force\",\"severity\",\"priority\",\"reason\"}. priority is watch, elevated, or urgent. Do not invent measurements.",
+                "You triage a civil hazard. Reply with one JSON object and no other text: {\"force\",\"severity\",\"priority\",\"reason\"}. priority is watch, elevated, or urgent. Do not invent measurements. Do not add a markdown fence or thinking tags.",
             },
             {
               role: "user",

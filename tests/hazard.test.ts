@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import { applyCorroboration, retuneConfidence } from "../src/lib/agent/confidence";
 import { buildDemoBrief } from "../src/lib/agent/demo-brief";
 import {
+  completionBody,
+  isUnsupportedJsonMode,
   maxTokensForModel,
   modelSettings,
   readMessageContent,
   shouldFallbackToNano,
+  usesDirectJson,
 } from "../src/lib/agent/nemotron";
 import { briefDraftSchema, normalizeBriefDraft } from "../src/lib/agent/schema";
 import { numberTokens, parseJsonLoose, unsupportedNumbers, wordCount } from "../src/lib/agent/text";
@@ -279,25 +282,65 @@ describe("briefs", () => {
 });
 
 describe("Nemotron routing", () => {
-  it("uses the verified defaults and falls back when Super content is empty", () => {
+  it("uses the post-retirement defaults and falls back when brief content is empty", () => {
     const settings = modelSettings({} as NodeJS.ProcessEnv);
     expect(settings.baseURL).toBe("https://api.tokenfactory.nebius.com/v1/");
+    expect(settings.triage).toBe("nvidia/Nemotron-3_5-Lightning");
+    expect(settings.brief).toBe("nvidia/Nemotron-3.5-Super-VL");
+    expect(settings.analyst).toBe("nvidia/Nemotron-3-Ultra-550b-a55b");
     expect(settings.triage).toBe(NANO);
     expect(settings.brief).toBe(SUPER);
     expect(settings.analyst).toBe(DEFAULT_MODELS.analyst);
     expect(settings.apiKey).toBe("");
     expect(maxTokensForModel(SUPER, NANO)).toBeGreaterThanOrEqual(1000);
+    expect(maxTokensForModel(DEFAULT_MODELS.analyst, NANO)).toBe(4000);
     expect(maxTokensForModel(NANO, NANO)).toBe(800);
     expect(shouldFallbackToNano("", SUPER, NANO)).toBe(true);
     expect(shouldFallbackToNano("{\"ok\":true}", SUPER, NANO)).toBe(false);
     expect(shouldFallbackToNano("", NANO, NANO)).toBe(false);
     expect(readMessageContent([{ type: "text", text: " ready " }])).toBe("ready");
+    expect(
+      readMessageContent([
+        { type: "reasoning", text: "{\"force\":\"land\"}" },
+        { type: "text", text: "{\"headline\":\"Quake\"}" },
+      ]),
+    ).toBe('{"headline":"Quake"}');
+    expect(usesDirectJson("brief", SUPER, NANO)).toBe(true);
+    expect(usesDirectJson("triage", NANO, NANO)).toBe(true);
+    expect(usesDirectJson("analyst", DEFAULT_MODELS.analyst, NANO)).toBe(false);
+    expect(usesDirectJson("analyst", NANO, NANO)).toBe(true);
+    const briefRequest = completionBody({
+      model: SUPER,
+      messages: [{ role: "user", content: "Return JSON." }],
+      triageModel: NANO,
+      directJson: true,
+    });
+    expect(briefRequest.response_format).toEqual({ type: "json_object" });
+    expect(briefRequest.max_tokens).toBe(4000);
+    expect(
+      (briefRequest as { chat_template_kwargs?: { enable_thinking: boolean } }).chat_template_kwargs,
+    ).toEqual({ enable_thinking: false });
+    const analystRequest = completionBody({
+      model: DEFAULT_MODELS.analyst,
+      messages: [{ role: "user", content: "Return JSON." }],
+      triageModel: NANO,
+      directJson: false,
+    });
+    expect(analystRequest.response_format).toBeUndefined();
+    expect(analystRequest.max_tokens).toBe(4000);
+    expect(
+      (analystRequest as { chat_template_kwargs?: { enable_thinking: boolean } }).chat_template_kwargs,
+    ).toBeUndefined();
+    const rejected = new Error("response_format is not supported") as Error & { status: number };
+    rejected.status = 400;
+    expect(isUnsupportedJsonMode(rejected)).toBe(true);
+    expect(isUnsupportedJsonMode(new Error("network down"))).toBe(false);
     const custom = modelSettings({
-      NEMOTRON_TRIAGE_MODEL: "nvidia/Nemotron-3_5-Lightning",
+      NEMOTRON_TRIAGE_MODEL: "example/triage-override",
       NEMOTRON_BRIEF_MODEL: NANO,
       NEBIUS_API_KEY: "secret-not-logged",
     } as unknown as NodeJS.ProcessEnv);
-    expect(custom.triage).toBe("nvidia/Nemotron-3_5-Lightning");
+    expect(custom.triage).toBe("example/triage-override");
     expect(custom.brief).toBe(NANO);
     expect(custom.apiKey).toBe("secret-not-logged");
   });
@@ -305,6 +348,10 @@ describe("Nemotron routing", () => {
   it("parses fenced JSON and strips thinking tags", () => {
     const parsed = parseJsonLoose('<think>secret</think>\n```json\n{"headline":"Quake"}\n```');
     expect(parsed).toEqual({ headline: "Quake" });
+    expect(parseJsonLoose('notes {"force":"land"}\n</think>\n{"headline":"Quake"}')).toEqual({
+      headline: "Quake",
+    });
+    expect(parseJsonLoose('{"headline":"brace } inside"}')).toEqual({ headline: "brace } inside" });
     expect(numberTokens("magnitude 4.8 at 10 km")).toEqual(["4.8", "10"]);
     expect(numberTokens("15,470 acres")).toEqual(["15,470"]);
     expect(unsupportedNumbers("about 4.8", "magnitude 4.8")).toEqual([]);

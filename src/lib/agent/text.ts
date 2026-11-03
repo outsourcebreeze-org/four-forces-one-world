@@ -58,14 +58,65 @@ export function unsupportedNumbers(text: string, allowedBlob: string): string[] 
   return bad;
 }
 
+/** Index of the `}` that closes the object opened at `start`, ignoring braces inside strings. */
+function matchingBrace(text: string, start: number): number {
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = start; i < text.length; i += 1) {
+    const char = text[i];
+    if (inString) {
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === "\\") {
+        escape = true;
+        continue;
+      }
+      if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/** Last complete object. A reasoning preamble can contain an earlier `{...}`. */
+function lastTopLevelObject(text: string): string {
+  let index = 0;
+  let last = "";
+  while (index < text.length) {
+    const start = text.indexOf("{", index);
+    if (start < 0) break;
+    const end = matchingBrace(text, start);
+    if (end < 0) break;
+    last = text.slice(start, end + 1);
+    index = end + 1;
+  }
+  return last;
+}
+
 export function parseJsonLoose(text: string): unknown {
   let cleaned = text.trim();
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  // Nemotron 3.5 can start already inside the think block, so only the close tag is in `content`.
+  const closed = cleaned.toLowerCase().lastIndexOf("</think>");
+  if (closed >= 0) cleaned = cleaned.slice(closed + "</think>".length).trim();
+  const unclosed = cleaned.search(/<think>/i);
+  if (unclosed >= 0) cleaned = cleaned.slice(0, unclosed).trim();
   const fenced = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fenced) cleaned = fenced[1].trim();
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
-  if (start >= 0 && end > start) cleaned = cleaned.slice(start, end + 1);
+  const object = lastTopLevelObject(cleaned);
+  if (object) cleaned = object;
   cleaned = cleaned.replace(/,\s*([}\]])/g, "$1");
   return JSON.parse(cleaned);
 }
