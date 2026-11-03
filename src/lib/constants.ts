@@ -7,10 +7,13 @@ export const USER_AGENT =
 
 export const NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1/";
 
-/** Defaults verified against Token Factory on 13 Oct 2026. Override with env. */
+/**
+ * Serverless defaults after the 9 Nov 2026 Token Factory retirement.
+ * Override with env. Ultra is not in that retirement.
+ */
 export const DEFAULT_MODELS = {
-  triage: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
-  brief: "nvidia/nemotron-3-super-120b-a12b",
+  triage: "nvidia/Nemotron-3_5-Lightning",
+  brief: "nvidia/Nemotron-3.5-Super-VL",
   analyst: "nvidia/Nemotron-3-Ultra-550b-a55b",
   lightning: "nvidia/Nemotron-3_5-Lightning",
 } as const;

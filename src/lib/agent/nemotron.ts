@@ -26,10 +26,54 @@ export function modelFor(role: ModelRole, settings: ModelSettings = modelSetting
   return settings[role];
 }
 
-/** Super and Ultra spend tokens on reasoning. Below 1000, content often comes back empty. */
-export function maxTokensForModel(model: string, nanoModel: string): number {
-  // Reasoning models spend most of the budget before the JSON, so leave room past 1000.
-  return model === nanoModel ? 800 : 4000;
+/**
+ * Ultra still spends tokens on reasoning before the JSON, so it keeps a 4000 budget.
+ * Triage is called with thinking off, so 800 is enough for its short JSON object.
+ */
+export function maxTokensForModel(model: string, triageModel: string): number {
+  return model === triageModel ? 800 : 4000;
+}
+
+/**
+ * Lightning and Super VL think by default. A short budget then ends inside the
+ * trace and `content` comes back empty, so the brief parser never sees JSON.
+ * Triage, briefs, and a fallback onto the triage model ask for a JSON object
+ * with thinking off. Ultra keeps the previous request shape.
+ */
+export function usesDirectJson(role: ModelRole, model: string, triageModel: string): boolean {
+  if (model === triageModel) return true;
+  return role !== "analyst";
+}
+
+export function isUnsupportedJsonMode(error: unknown): boolean {
+  if (!error || typeof error !== "object" || !("status" in error)) return false;
+  const status = error.status;
+  if (status !== 400 && status !== 422) return false;
+  const message = error instanceof Error ? error.message : "";
+  return /response_format|chat_template_kwargs|enable_thinking|json_object/i.test(message);
+}
+
+type ChatMessage = { role: "system" | "user"; content: string };
+
+export function completionBody(options: {
+  model: string;
+  messages: ChatMessage[];
+  triageModel: string;
+  directJson: boolean;
+}): OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming {
+  const body: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+    chat_template_kwargs?: { enable_thinking: boolean };
+  } = {
+    model: options.model,
+    temperature: 0.2,
+    max_tokens: maxTokensForModel(options.model, options.triageModel),
+    messages: options.messages,
+  };
+  if (options.directJson) {
+    body.response_format = { type: "json_object" };
+    body.chat_template_kwargs = { enable_thinking: false };
+  }
+  return body;
 }
 
 export function readMessageContent(content: unknown): string {
@@ -38,10 +82,11 @@ export function readMessageContent(content: unknown): string {
   return content
     .map((part) => {
       if (typeof part === "string") return part;
-      if (part && typeof part === "object" && "text" in part && typeof part.text === "string") {
-        return part.text;
-      }
-      return "";
+      if (!part || typeof part !== "object") return "";
+      const record = part as { type?: unknown; text?: unknown };
+      // Super VL can return the trace as its own part. The JSON answer is the text part.
+      if (record.type === "reasoning" || record.type === "thinking") return "";
+      return typeof record.text === "string" ? record.text : "";
     })
     .join("")
     .trim();
@@ -50,8 +95,6 @@ export function readMessageContent(content: unknown): string {
 export function shouldFallbackToNano(content: string, model: string, nanoModel: string): boolean {
   return content.trim().length === 0 && model !== nanoModel;
 }
-
-type ChatMessage = { role: "system" | "user"; content: string };
 
 export async function completeJson(options: {
   role: ModelRole;
@@ -66,13 +109,24 @@ export async function completeJson(options: {
   const requested = modelFor(options.role, settings);
 
   async function call(model: string): Promise<string> {
-    const completion = await client.chat.completions.create({
-      model,
-      temperature: 0.2,
-      max_tokens: maxTokensForModel(model, settings.triage),
-      messages: options.messages,
-    });
-    return readMessageContent(completion.choices[0]?.message?.content);
+    const directJson = usesDirectJson(options.role, model, settings.triage);
+    const request = (useDirectJson: boolean) =>
+      client.chat.completions.create(
+        completionBody({
+          model,
+          messages: options.messages,
+          triageModel: settings.triage,
+          directJson: useDirectJson,
+        }),
+      );
+    try {
+      const completion = await request(directJson);
+      return readMessageContent(completion.choices[0]?.message?.content);
+    } catch (error) {
+      if (!directJson || !isUnsupportedJsonMode(error)) throw error;
+      const completion = await request(false);
+      return readMessageContent(completion.choices[0]?.message?.content);
+    }
   }
 
   const first = await call(requested);
@@ -82,7 +136,7 @@ export async function completeJson(options: {
   }
   const second = await call(settings.triage);
   if (!second) {
-    throw new Error(`Empty content from ${requested}, and the Nano fallback was empty too`);
+    throw new Error(`Empty content from ${requested}, and the triage fallback was empty too`);
   }
   return { text: second, model: settings.triage, emptyContentFallback: true };
 }

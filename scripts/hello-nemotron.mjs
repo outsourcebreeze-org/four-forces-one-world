@@ -24,7 +24,21 @@ try {
 
 const base = (process.env.NEBIUS_BASE_URL || "https://api.tokenfactory.nebius.com/v1/").replace(/\/?$/, "/");
 const key = process.env.NEBIUS_API_KEY?.trim();
-const model = process.env.NEMOTRON_TRIAGE_MODEL?.trim() || "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
+const model = process.env.NEMOTRON_TRIAGE_MODEL?.trim() || "nvidia/Nemotron-3_5-Lightning";
+
+function messageText(content) {
+  if (typeof content === "string") return content.trim();
+  if (!Array.isArray(content)) return "";
+  return content
+    .map((part) => {
+      if (typeof part === "string") return part;
+      if (!part || typeof part !== "object") return "";
+      if (part.type === "reasoning" || part.type === "thinking") return "";
+      return typeof part.text === "string" ? part.text : "";
+    })
+    .join("")
+    .trim();
+}
 
 if (!key) {
   console.log("DEMO_MODE: NEBIUS_API_KEY is not set. Skipping the live Nemotron call.");
@@ -41,6 +55,8 @@ const response = await fetch(`${base}chat/completions`, {
     model,
     temperature: 0.2,
     max_tokens: 800,
+    // Lightning reasons by default. Thinking off keeps the word in `content`.
+    chat_template_kwargs: { enable_thinking: false },
     messages: [{ role: "user", content: "Reply with the single word ready." }],
   }),
 });
@@ -51,7 +67,7 @@ if (!response.ok) {
 }
 
 const payload = await response.json();
-const content = payload.choices?.[0]?.message?.content?.trim() ?? "";
+const content = messageText(payload.choices?.[0]?.message?.content);
 if (!content) {
   console.error("Nemotron returned empty content.");
   process.exit(1);

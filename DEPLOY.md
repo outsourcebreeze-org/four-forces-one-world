@@ -18,9 +18,11 @@ Required for live briefs, news checks, FIRMS fires, and OpenAQ stations:
 Optional:
 
 - `NEBIUS_BASE_URL` — default `https://api.tokenfactory.nebius.com/v1/`
-- `NEMOTRON_TRIAGE_MODEL` — default `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`
-- `NEMOTRON_BRIEF_MODEL` — default `nvidia/nemotron-3-super-120b-a12b`
+- `NEMOTRON_TRIAGE_MODEL` — default `nvidia/Nemotron-3_5-Lightning`
+- `NEMOTRON_BRIEF_MODEL` — default `nvidia/Nemotron-3.5-Super-VL`
 - `NEMOTRON_ANALYST_MODEL` — default `nvidia/Nemotron-3-Ultra-550b-a55b`
+
+`NEMOTRON_TRIAGE_MODEL` and `NEMOTRON_BRIEF_MODEL` override those defaults. If the Vercel project still sets `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` or `nvidia/nemotron-3-super-120b-a12b`, update them. Token Factory removes those serverless ids on 9 Nov 2026 and does not remap requests. `NEMOTRON_ANALYST_MODEL` stays on Ultra.
 - `DEMO_MODE` — leave unset for live feeds. `snapshot` serves `data/demo-snapshot.json` only.
 
 The app still boots with no keys: public feeds stay live and briefs are labeled demo. FIRMS and OpenAQ are skipped until their keys are set.
