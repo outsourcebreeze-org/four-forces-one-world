@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GlobeView } from "@/components/globe-view";
 import { LiveCameras } from "@/components/live-cameras";
-import { FORCE_META, OPEN_METEO_NOTICE, WATCH_AREAS } from "@/lib/constants";
+import { APP_DESCRIPTION, APP_NAME, FORCE_META, OPEN_METEO_NOTICE, WATCH_AREAS } from "@/lib/constants";
 import { haversineKm } from "@/lib/geo";
 import { SEVERITY_LABEL } from "@/lib/severity";
 import { FORCES, type BriefResponse, type Force, type Situation, type WorldState } from "@/lib/types";
@@ -126,12 +126,10 @@ export function Dashboard() {
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 px-4 py-3 lg:px-6">
-        <div>
-          <p className="font-serif text-2xl leading-none text-[#f6f1e6]">Four Forces, One World</p>
-          <p className="mt-1 max-w-xl text-sm text-[#f6f1e6]/70">
-            A civil public-safety picture of water, air, land, and fire. Each situation can be read as a short brief with a confidence score and the sources behind it.
-          </p>
-        </div>
+        <nav aria-label="Primary">
+          <h1 className="font-serif text-2xl leading-none text-[#f6f1e6]">{APP_NAME}</h1>
+          <p className="mt-1 max-w-xl text-sm text-[#f6f1e6]/70">{APP_DESCRIPTION}</p>
+        </nav>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={world?.dataMode === "live" ? "outline" : "demo"} className="border-white/20 text-[#f6f1e6]">
             {world?.dataMode === "live" ? "Live public feeds" : loading ? "Loading feeds" : "Demo snapshot"}
@@ -229,7 +227,10 @@ export function Dashboard() {
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-[11px] leading-relaxed text-[#f6f1e6]/45">{OPEN_METEO_NOTICE}</p>
+          <footer className="mt-4 text-[11px] leading-relaxed text-[#f6f1e6]/45">
+            <p>{APP_NAME}</p>
+            <p className="mt-1">{OPEN_METEO_NOTICE}</p>
+          </footer>
         </aside>
 
         <main className="relative order-1 h-[52vh] min-h-[320px] lg:order-2 lg:h-auto">

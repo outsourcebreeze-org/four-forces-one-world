@@ -1,6 +1,6 @@
 # Deploy on Vercel
 
-Four Forces, One World is a Next.js App Router app. It does not keep a process polling feeds. `GET /api/events`, `/api/situations`, and `/api/health` fetch public sources on request and reuse an 8-minute in-memory cache on that instance. `POST /api/briefs` runs Nemotron and Tavily for one situation. That request-and-cache shape fits Vercel serverless functions. A separate always-on host is not required.
+OutsourceBreeze is a Next.js App Router app. It does not keep a process polling feeds. `GET /api/events`, `/api/situations`, and `/api/health` fetch public sources on request and reuse an 8-minute in-memory cache on that instance. `POST /api/briefs` runs Nemotron and Tavily for one situation. That request-and-cache shape fits Vercel serverless functions. A separate always-on host is not required.
 
 Connect the Origin repository `sebastien-vaval/four-forces-one-world`. Framework preset: Next.js. Build command: `npm run build`. Install command: `npm install`. No custom output directory.
 
