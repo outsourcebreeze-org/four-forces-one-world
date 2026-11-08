@@ -1,10 +1,8 @@
-# Four Forces, One World
+# OutsourceBreeze
 
-An open-source globe that puts public water, air, land, and fire signals in one place, then writes a short situation brief with a confidence score and the sources behind it.
+OutsourceBreeze gives cities one verified, real-time picture of water, air, land and fire risks (AI merges public alerts and sensor feeds, an analyst confirms each signal).
 
 It is a civil public-safety tool for municipal emergency offices, humanitarian coordinators, and campus or facility safety leads. It does not track people, and it does not add flight, ship, or other surveillance layers.
-
-The four-force idea was inspired by FourForces Watch. This repository is a separate project. The code here was written for this project and is not a copy of that one.
 
 **Live demo:** [https://four-forces-one-world.vercel.app](https://four-forces-one-world.vercel.app)
 

@@ -1,6 +1,6 @@
 # Data sources and licenses
 
-Four Forces, One World reads public hazard feeds and normalizes them to one event record: `id`, `force`, `type`, `title`, `lat`, `lon`, `time`, `severity` (0–4), `source`, `url`, plus `license`, `attribution`, and scalar `details` copied from the feed.
+OutsourceBreeze reads public hazard feeds and normalizes them to one event record: `id`, `force`, `type`, `title`, `lat`, `lon`, `time`, `severity` (0–4), `source`, `url`, plus `license`, `attribution`, and scalar `details` copied from the feed.
 
 This file is the attribution register. Re-check terms before any commercial use. The application code is MIT; the data is not, and Open-Meteo’s free API is non-commercial.
 

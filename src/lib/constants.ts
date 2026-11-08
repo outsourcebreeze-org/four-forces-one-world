@@ -1,9 +1,12 @@
 import type { Force } from "./types";
 
-export const APP_NAME = "Four Forces, One World";
+export const APP_NAME = "OutsourceBreeze";
+
+export const APP_DESCRIPTION =
+  "OutsourceBreeze gives cities one verified, real-time picture of water, air, land and fire risks (AI merges public alerts and sensor feeds, an analyst confirms each signal).";
 
 export const USER_AGENT =
-  "FourForcesOneWorld/0.1 (+https://github.com/four-forces-one-world; civil public-safety dashboard)";
+  "OutsourceBreeze/0.1 (+https://github.com/four-forces-one-world; verified city risk picture)";
 
 export const NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1/";
 
