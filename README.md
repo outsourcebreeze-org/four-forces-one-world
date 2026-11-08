@@ -4,8 +4,6 @@ OutsourceBreeze gives cities one verified, real-time picture of water, air, land
 
 It is a civil public-safety tool for municipal emergency offices, humanitarian coordinators, and campus or facility safety leads. It does not track people, and it does not add flight, ship, or other surveillance layers.
 
-The four-force idea was inspired by FourForces Watch. This repository is a separate project. The code here was written for this project and is not a copy of that one.
-
 **Live demo:** [https://four-forces-one-world.vercel.app](https://four-forces-one-world.vercel.app)
 
 **Demo video:** YouTube link TBD
